@@ -8,3 +8,15 @@
   from = "/*"
   to = "/index.html"
   status = 200
+
+# Defence-in-depth headers on every response. CSP caps the blast radius of
+# any accidental XSS; the rest harden framing, MIME sniffing and sensor
+# access. R2 photo origin is matched by `img-src ... https:` so the config
+# stays stable if the bucket's public URL changes.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self'; connect-src 'self' https://challapalli-people-api.onrender.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(self)"

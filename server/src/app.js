@@ -80,6 +80,11 @@ export function createApp() {
     if (err.name === "PrismaClientValidationError") {
       return res.status(400).json({ error: "Invalid request data." });
     }
+    // Express body-parser emits this when a request exceeds the json() limit
+    // above (15mb). Honour the right status code instead of masking it as 500.
+    if (err.type === "entity.too.large") {
+      return res.status(413).json({ error: "That request is too large. Try fewer or smaller photos." });
+    }
     res.status(500).json({ error: "Something went wrong on the server." });
   });
 
