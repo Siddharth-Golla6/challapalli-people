@@ -43,6 +43,13 @@ export default function Footer() {
             {t("footer.copyrightLink")} →
           </Link>
         </p>
+        {/* Visible brand-variant line — natural prose including the three
+            spellings residents actually search for (challapalli.people,
+            challapallipeople, Challapalli People). Helps the site rank for
+            exact-match brand queries in Google. */}
+        <p className="mx-auto mt-2 max-w-xl px-4 text-[11px] leading-snug text-neutral-400 dark:text-neutral-500">
+          {t("footer.brandNote")}
+        </p>
       </div>
     </footer>
   );

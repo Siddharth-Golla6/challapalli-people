@@ -400,6 +400,7 @@ export default {
   "footer.copyright": "© {year} challapalli.people. All rights reserved.",
   "footer.copyrightLink": "Copyright & attributions",
   "footer.unofficialNotice": "An independent, resident-built platform — not an official government website.",
+  "footer.brandNote": "Also known as challapalli.people, challapallipeople, or Challapalli People — civic engagement for the people of Challapalli Gram Panchayat, Krishna District, Andhra Pradesh. challapallipeople.com",
 
   // Copyright page
   "copyright.eyebrow": "Legal",
