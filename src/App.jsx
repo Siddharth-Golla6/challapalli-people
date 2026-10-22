@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 
@@ -67,14 +67,30 @@ function Providers({ children }) {
   );
 }
 
+// React Router v6 doesn't restore scroll on its own, and the framer-motion
+// exit animation keeps the outgoing page visible briefly, which otherwise
+// leaves users looking at the bottom of the prior scroll. Instant scroll
+// (no "smooth") on every pathname change puts the incoming page at the top.
+// Skip when the URL has a #hash — then the browser's anchor jump wins.
+function ScrollToTop() {
+  const { pathname, hash } = useLocation();
+  useEffect(() => {
+    if (hash) return;
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [pathname, hash]);
+  return null;
+}
+
 // Wrapping Routes in AnimatePresence is what makes exit transitions fire —
 // without it, the leaving page is unmounted instantly. Keyed on pathname so
 // each route is a distinct "scene" to animate between.
 function AnimatedRoutes() {
   const location = useLocation();
   return (
-    <AnimatePresence mode="wait" initial={false}>
-      <Routes location={location} key={location.pathname}>
+    <>
+      <ScrollToTop />
+      <AnimatePresence mode="wait" initial={false}>
+        <Routes location={location} key={location.pathname}>
         <Route path="/" element={withShell(<LandingPage />)} />
         <Route path="/login" element={withShell(<Login />)} />
         <Route path="/register" element={withShell(<Register />)} />
@@ -123,7 +139,8 @@ function AnimatedRoutes() {
         <Route path="/404" element={withShell(<NotFound />)} />
         <Route path="*" element={withShell(<NotFound />)} />
       </Routes>
-    </AnimatePresence>
+      </AnimatePresence>
+    </>
   );
 }
 
