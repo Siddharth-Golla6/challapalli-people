@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="challapalli.people — Your Ward. Your Voice. Our Challapalli. Civic engagement platform for the 18 wards of Challapalli Gram Panchayat.">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#047857"/>
+      <stop offset="100%" stop-color="#065F46"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#F59E0B" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- Decorative amber glow top-right -->
+  <circle cx="1050" cy="140" r="320" fill="url(#glow)"/>
+  <circle cx="140" cy="520" r="260" fill="url(#glow)" opacity="0.6"/>
+
+  <!-- Subtle dot grid -->
+  <g fill="#ffffff" opacity="0.06">
+    <circle cx="80" cy="80" r="2"/>
+    <circle cx="160" cy="80" r="2"/>
+    <circle cx="240" cy="80" r="2"/>
+    <circle cx="80" cy="160" r="2"/>
+    <circle cx="160" cy="160" r="2"/>
+    <circle cx="240" cy="160" r="2"/>
+    <circle cx="1080" cy="500" r="2"/>
+    <circle cx="1120" cy="500" r="2"/>
+    <circle cx="1080" cy="540" r="2"/>
+    <circle cx="1120" cy="540" r="2"/>
+  </g>
+
+  <!-- Eyebrow pill -->
+  <g transform="translate(80 110)">
+    <rect x="0" y="0" width="470" height="46" rx="23" fill="#F59E0B" fill-opacity="0.18" stroke="#F59E0B" stroke-opacity="0.45" stroke-width="1.5"/>
+    <circle cx="25" cy="23" r="5" fill="#F59E0B"/>
+    <text x="44" y="30" font-family="Lexend, 'Segoe UI', sans-serif" font-size="18" font-weight="700" fill="#FDF9EC" letter-spacing="2">
+      CHALLAPALLI GRAM PANCHAYAT · 18 WARDS
+    </text>
+  </g>
+
+  <!-- Brand name -->
+  <text x="80" y="235" font-family="Lexend, 'Segoe UI', sans-serif" font-size="54" font-weight="800" fill="#FDF9EC" letter-spacing="-1">
+    challapalli.people
+  </text>
+
+  <!-- Big headline -->
+  <text x="80" y="355" font-family="Lexend, 'Segoe UI', sans-serif" font-size="88" font-weight="800" fill="#FFFFFF" letter-spacing="-2">
+    Your Ward. Your Voice.
+  </text>
+  <text x="80" y="455" font-family="Lexend, 'Segoe UI', sans-serif" font-size="88" font-weight="800" fill="#F59E0B" letter-spacing="-2">
+    Our Challapalli.
+  </text>
+
+  <!-- Divider bar -->
+  <rect x="80" y="490" width="120" height="8" rx="4" fill="#F59E0B"/>
+
+  <!-- Subhead -->
+  <text x="80" y="548" font-family="Inter, 'Segoe UI', sans-serif" font-size="22" font-weight="500" fill="#FDF9EC" fill-opacity="0.9">
+    Report civic issues. Share suggestions. Give feedback.
+  </text>
+  <text x="80" y="582" font-family="Inter, 'Segoe UI', sans-serif" font-size="20" font-weight="400" fill="#FDF9EC" fill-opacity="0.8">
+    English + Telugu · All 18 wards covered.
+  </text>
+
+  <!-- Decorative compass top-right (echoes the 404 page motif) -->
+  <g transform="translate(960 300)" opacity="0.9">
+    <circle r="130" fill="#F59E0B"/>
+    <circle r="130" fill="none" stroke="#065F46" stroke-opacity="0.35" stroke-width="4"/>
+    <!-- Needle -->
+    <polygon points="0,-85 20,0 0,10 -20,0" fill="#065F46"/>
+    <polygon points="0,85 20,0 0,-10 -20,0" fill="#065F46" fill-opacity="0.35"/>
+    <circle r="10" fill="#065F46"/>
+    <!-- Cardinal letters -->
+    <text x="0" y="-95" text-anchor="middle" font-family="Lexend, sans-serif" font-size="18" font-weight="700" fill="#065F46">N</text>
+    <text x="100" y="7" text-anchor="middle" font-family="Lexend, sans-serif" font-size="18" font-weight="700" fill="#065F46">E</text>
+    <text x="0" y="110" text-anchor="middle" font-family="Lexend, sans-serif" font-size="18" font-weight="700" fill="#065F46">S</text>
+    <text x="-100" y="7" text-anchor="middle" font-family="Lexend, sans-serif" font-size="18" font-weight="700" fill="#065F46">W</text>
+  </g>
+</svg>

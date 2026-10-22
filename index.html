@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <!-- Icons -->
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+
+    <!-- Page title + core description. Keep description under ~160
+         characters so Google doesn't truncate it in search results. -->
+    <title>challapalli.people | Civic grievance platform for Challapalli Gram Panchayat</title>
+    <meta
+      name="description"
+      content="Report civic issues, share suggestions and give feedback across the 18 wards of Challapalli Gram Panchayat. Transparent, bilingual (English/Telugu), people-first."
+    />
+    <meta
+      name="keywords"
+      content="Challapalli, challapalli.people, gram panchayat, civic engagement, grievance redressal, Krishna district, Andhra Pradesh, 18 wards, people's voice, suggestions, feedback, Telugu, panchayat portal"
+    />
+    <meta name="author" content="challapalli.people" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="theme-color" content="#047857" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#065F46" media="(prefers-color-scheme: dark)" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="canonical" href="https://challapalli-people.netlify.app/" />
+
+    <!-- Open Graph (Facebook, LinkedIn, WhatsApp) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="challapalli.people" />
+    <meta property="og:url" content="https://challapalli-people.netlify.app/" />
+    <meta property="og:title" content="challapalli.people — Your Ward. Your Voice. Our Challapalli." />
+    <meta
+      property="og:description"
+      content="A people-first platform for the 18 wards of Challapalli Gram Panchayat — report civic issues, share suggestions and give feedback. English + Telugu."
+    />
+    <meta property="og:image" content="https://challapalli-people.netlify.app/og-cover.svg" />
+    <meta property="og:image:alt" content="challapalli.people — civic engagement platform for all 18 wards of Challapalli Gram Panchayat" />
+    <meta property="og:locale" content="en_IN" />
+    <meta property="og:locale:alternate" content="te_IN" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="challapalli.people — Your Ward. Your Voice. Our Challapalli." />
+    <meta
+      name="twitter:description"
+      content="A people-first platform for the 18 wards of Challapalli Gram Panchayat — report civic issues, share suggestions and give feedback. English + Telugu."
+    />
+    <meta name="twitter:image" content="https://challapalli-people.netlify.app/og-cover.svg" />
+    <meta name="twitter:image:alt" content="challapalli.people — civic engagement platform for all 18 wards of Challapalli Gram Panchayat" />
+
+    <!-- Fonts: preconnect + preload the stylesheet so FOUT is minimal. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Noto+Sans+Telugu:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Structured data for search engines. Describes the site as a civic
+         WebSite / GovernmentOrganization so Google can render a rich card. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://challapalli-people.netlify.app/#website",
+            "url": "https://challapalli-people.netlify.app/",
+            "name": "challapalli.people",
+            "description": "Civic engagement platform for the 18 wards of Challapalli Gram Panchayat, Krishna District, Andhra Pradesh.",
+            "inLanguage": ["en-IN", "te-IN"],
+            "publisher": { "@id": "https://challapalli-people.netlify.app/#org" }
+          },
+          {
+            "@type": "GovernmentOrganization",
+            "@id": "https://challapalli-people.netlify.app/#org",
+            "name": "challapalli.people",
+            "alternateName": "Challapalli Gram Panchayat Platform",
+            "url": "https://challapalli-people.netlify.app/",
+            "logo": "https://challapalli-people.netlify.app/favicon.svg",
+            "slogan": "Your Ward. Your Voice. Our Challapalli.",
+            "areaServed": {
+              "@type": "AdministrativeArea",
+              "name": "Challapalli Gram Panchayat",
+              "containedInPlace": {
+                "@type": "AdministrativeArea",
+                "name": "Krishna District, Andhra Pradesh, India"
+              }
+            }
+          }
+        ]
+      }
+    </script>
+
+    <!-- Theme preference bootstrap: avoid a dark/light flash before React
+         mounts. The storage key is `md_theme_v2`; the legacy `md_theme` key
+         is intentionally ignored and cleared by ThemeContext so every
+         browser lands on the new dark-first default on next visit. -->
+    <script>
+      (function () {
+        try {
+          localStorage.removeItem("md_theme");
+          var stored = localStorage.getItem("md_theme_v2");
+          var dark = stored ? stored === "dark" : true;
+          if (dark) document.documentElement.classList.add("dark");
+        } catch (e) {
+          document.documentElement.classList.add("dark");
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

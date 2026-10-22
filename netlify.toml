@@ -1,0 +1,10 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# SPA fallback — client-side routes (React Router) need every path to
+# resolve to index.html, or a direct link/refresh on e.g. /dashboard 404s.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

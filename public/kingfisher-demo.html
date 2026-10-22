@@ -1,0 +1,1093 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>KINGFISHER — Cinematic Prompt Library</title>
+<meta name="description" content="KINGFISHER — a cinematic prompt library for websites that land with precision. (Demo page.)" />
+<meta name="robots" content="noindex,nofollow" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+<style>
+  /* ---------- design tokens ---------- */
+  :root {
+    --bg: #B6C3B0;
+    --paper: #E3E8DE;
+    --ink: #10201F;
+    --ink-2: #2E3D3A;
+    --ink-3: #4E5E58;
+    --line: rgba(16, 32, 31, 0.14);
+    --ghost: #ADBAA7;
+    --orange: #E8732A;
+    --orange-2: #F3A15E;
+    --teal: #0E7C86;
+    --panel: #0F1D1C;
+    --panel-2: #172A28;
+    --ease: cubic-bezier(0.2, 0.7, 0.1, 1);
+
+    --serif: "Instrument Serif", "Cormorant Garamond", "Times New Roman", Georgia, serif;
+    --sans: "Manrope", "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: "JetBrains Mono", "SFMono-Regular", ui-monospace, Menlo, Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  a { color: inherit; text-decoration: none; }
+  img, svg, video, canvas { display: block; max-width: 100%; }
+
+  /* ---------- reveal choreography ---------- */
+  .rv {
+    opacity: 0;
+    transform: translateY(18px);
+    filter: blur(6px);
+    transition:
+      opacity 0.9s var(--ease),
+      transform 0.9s var(--ease),
+      filter 0.9s var(--ease);
+    transition-delay: calc(var(--d, 0) * 90ms);
+    will-change: transform, opacity, filter;
+  }
+  .is-revealed .rv {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .rv { transition: none !important; }
+  }
+
+  /* ---------- hero ---------- */
+  .hero {
+    position: relative;
+    height: 100svh;
+    min-height: 640px;
+    overflow: hidden;
+    background: var(--bg);
+  }
+  .hero-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+  }
+
+  /* The trick: giant word sits behind the bird using mix-blend-mode. */
+  .giant-word {
+    position: absolute;
+    top: 13vh;
+    left: 0;
+    right: 0;
+    margin: 0;
+    text-align: center;
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: clamp(90px, 17vw, 300px);
+    line-height: 0.95;
+    color: var(--ghost);
+    mix-blend-mode: darken;
+    z-index: 2;
+    pointer-events: none;
+    letter-spacing: -0.01em;
+    -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 38%, rgba(0, 0, 0, 0.35) 62%, transparent 86%);
+    mask-image: linear-gradient(180deg, #000 0%, #000 38%, rgba(0, 0, 0, 0.35) 62%, transparent 86%);
+  }
+  .giant-word em { font-style: italic; }
+
+  /* Legibility overlay */
+  .legibility {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+    background:
+      linear-gradient(90deg, var(--bg) 0%, var(--bg) 10%, rgba(182, 195, 176, 0.7) 24%, transparent 38%),
+      linear-gradient(180deg, transparent 55%, var(--bg) 100%);
+  }
+
+  /* ---------- nav ---------- */
+  .nav {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 24px;
+    padding: 22px 36px;
+  }
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    font-size: 13px;
+    color: var(--ink);
+  }
+  .brand-mark {
+    display: inline-flex;
+    width: 22px;
+    height: 22px;
+  }
+  .nav-links {
+    display: inline-flex;
+    gap: 24px;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    color: var(--ink-2);
+    text-transform: uppercase;
+  }
+  .nav-links a { transition: color 0.2s var(--ease); }
+  .nav-links a:hover { color: var(--ink); }
+  .nav-right {
+    display: inline-flex;
+    gap: 14px;
+    align-items: center;
+    justify-content: flex-end;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .nav-right .signin { color: var(--ink-2); transition: color 0.2s var(--ease); }
+  .nav-right .signin:hover { color: var(--ink); }
+  .pill-dark {
+    background: var(--panel);
+    color: var(--paper);
+    padding: 10px 16px;
+    border-radius: 999px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    transition: transform 0.2s var(--ease), background 0.2s var(--ease);
+  }
+  .pill-dark:hover { background: var(--panel-2); transform: translateY(-1px); }
+
+  /* ---------- hero copy (left column) ---------- */
+  .hero-grid {
+    position: relative;
+    z-index: 5;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) min(400px, 34vw);
+    gap: 48px;
+    align-items: center;
+    height: 100%;
+    padding: 110px 36px 110px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .hero-copy {
+    max-width: 470px;
+    margin-top: 76px; /* clears the giant word */
+  }
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 0 0 22px;
+  }
+  .eyebrow::before {
+    content: "";
+    display: inline-block;
+    width: 28px;
+    height: 1px;
+    background: var(--ink-2);
+  }
+  .h1-serif {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: clamp(44px, 5vw, 76px);
+    line-height: 0.95;
+    letter-spacing: -0.015em;
+    margin: 0 0 22px;
+    color: var(--ink);
+  }
+  .h1-serif em { color: var(--teal); font-style: italic; }
+  .lede {
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--ink-2);
+    margin: 0 0 32px;
+    max-width: 420px;
+  }
+  .cta-row {
+    display: inline-flex;
+    gap: 22px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .cta-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    background: linear-gradient(100deg, var(--orange) 0%, var(--orange-2) 100%);
+    color: #ffffff;
+    padding: 12px 12px 12px 24px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: 0.02em;
+    box-shadow: 0 8px 24px -8px rgba(232, 115, 42, 0.5);
+    transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
+  }
+  .cta-primary:hover { transform: translateY(-2px); box-shadow: 0 16px 32px -10px rgba(232, 115, 42, 0.55); }
+  .cta-primary .arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.22);
+    font-size: 15px;
+    line-height: 1;
+    transition: transform 0.3s var(--ease);
+  }
+  .cta-primary:hover .arrow { transform: translateX(3px); }
+  .cta-sub {
+    font-size: 13px;
+    color: var(--ink-2);
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 2px;
+    transition: color 0.2s var(--ease), border-color 0.2s var(--ease);
+  }
+  .cta-sub:hover { color: var(--ink); border-color: var(--ink-2); }
+
+  /* ---------- hero cluster (right column) ---------- */
+  .hero-cluster {
+    width: min(400px, 34vw);
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .trust-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    color: var(--ink-3);
+    text-transform: uppercase;
+  }
+  .avatars { display: inline-flex; }
+  .avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    border: 2px solid var(--bg);
+    margin-left: -8px;
+  }
+  .avatar:first-child { margin-left: 0; }
+  .avatar:nth-child(1) { background: linear-gradient(135deg, #E8732A, #F3A15E); }
+  .avatar:nth-child(2) { background: linear-gradient(135deg, #0E7C86, #4CB0B8); }
+  .avatar:nth-child(3) { background: linear-gradient(135deg, #4E5E58, #8CA19B); }
+  .avatar:nth-child(4) { background: linear-gradient(135deg, #10201F, #2E3D3A); }
+
+  .cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    align-items: start;
+  }
+  .card {
+    background: var(--panel);
+    color: var(--paper);
+    border-radius: 22px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    box-shadow: 0 20px 50px -20px rgba(16, 32, 31, 0.45);
+  }
+  .card.card-2 { transform: translateY(18px); }
+
+  .card-head {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(227, 232, 222, 0.65);
+  }
+  .thumb {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 14px;
+    overflow: hidden;
+    background: radial-gradient(circle at 30% 30%, rgba(14, 124, 134, 0.5), rgba(232, 115, 42, 0.35));
+  }
+  .thumb canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 0.6s var(--ease);
+  }
+  .thumb.has-image canvas { opacity: 1; }
+  .thumb-caption {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 8px 10px;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--paper);
+    background: linear-gradient(0deg, rgba(15, 29, 28, 0.75), transparent);
+    z-index: 1;
+  }
+  .stat-serif {
+    font-family: var(--serif);
+    font-size: 26px;
+    line-height: 1;
+    margin: 2px 0 0;
+    color: #FFFFFF;
+    letter-spacing: -0.01em;
+  }
+  .dots {
+    display: inline-flex;
+    gap: 5px;
+    margin-top: 2px;
+  }
+  .dots span {
+    width: 5px;
+    height: 5px;
+    border-radius: 999px;
+    background: rgba(227, 232, 222, 0.3);
+  }
+  .dots span:first-child { background: var(--orange); }
+
+  /* ---------- bottom strip ---------- */
+  .bottom-strip {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 8;
+    padding: 22px 36px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 24px;
+  }
+  .strip-left, .strip-right { display: inline-flex; align-items: center; gap: 10px; }
+  .strip-right { justify-content: flex-end; }
+  .strip-mono {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .strip-serif-italic {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 15px;
+    color: var(--ink);
+  }
+  .strip-center {
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+  }
+  .replay {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.35);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--line);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink);
+    cursor: pointer;
+    transition: background 0.2s var(--ease);
+  }
+  .replay:hover { background: rgba(255, 255, 255, 0.6); }
+
+  /* ---------- below the fold ---------- */
+  .field-notes {
+    position: relative;
+    padding: 100px 36px 120px;
+    background:
+      linear-gradient(180deg, var(--bg) 0%, var(--paper) 220px),
+      var(--paper);
+    border-top: 1px solid var(--line);
+    overflow: hidden;
+  }
+  .notes-inner { max-width: 1300px; margin: 0 auto; }
+  .notes-header {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 48px;
+    align-items: start;
+    margin-bottom: 56px;
+  }
+  .kicker {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 0 0 24px;
+  }
+  .kicker .idx { color: var(--orange); margin-right: 6px; }
+  .h2-serif {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: clamp(40px, 5.2vw, 78px);
+    line-height: 1;
+    letter-spacing: -0.015em;
+    color: var(--ink);
+    margin: 0;
+  }
+  .notes-para {
+    font-size: 16px;
+    line-height: 1.55;
+    color: var(--ink-2);
+    margin: 32px 0 0;
+    max-width: 420px;
+  }
+
+  .bento {
+    display: grid;
+    grid-template-columns: 1.35fr 1fr 1fr;
+    grid-auto-rows: minmax(220px, auto);
+    gap: 16px;
+  }
+  .note {
+    position: relative;
+    border-radius: 22px;
+    padding: 24px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .note-light {
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid var(--line);
+    color: var(--ink);
+  }
+  .note-dark {
+    background: var(--panel);
+    color: var(--paper);
+    grid-row: span 2;
+  }
+  .note-span-2 { grid-column: span 2; }
+  .note-idx {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .note-dark .note-idx { color: rgba(227, 232, 222, 0.6); }
+  .note-title {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 26px;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+  .note-body {
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--ink-2);
+    margin: 0;
+  }
+  .note-dark .note-body { color: rgba(227, 232, 222, 0.75); }
+
+  .dive-svg { width: 100%; height: 100%; min-height: 180px; margin-top: auto; }
+  .dive-arc {
+    stroke: var(--orange);
+    stroke-width: 2;
+    fill: none;
+    stroke-dasharray: 420;
+    stroke-dashoffset: 420;
+    transition: stroke-dashoffset 2s var(--ease);
+  }
+  .is-visible .dive-arc { stroke-dashoffset: 0; }
+  .dive-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    fill: rgba(227, 232, 222, 0.7);
+  }
+  .dive-dot { fill: var(--orange); }
+
+  .swatches {
+    display: flex;
+    gap: 8px;
+    margin-top: auto;
+  }
+  .swatch {
+    flex: 1;
+    aspect-ratio: 1 / 1.1;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+  }
+  .swatch:nth-child(1) { background: linear-gradient(140deg, #1E6D8E, #44B2C4); }
+  .swatch:nth-child(2) { background: linear-gradient(140deg, #0E7C86, #4FC2CC); }
+  .swatch:nth-child(3) { background: linear-gradient(140deg, #164C7C, #3779C6); }
+
+  .eye-svg { width: 100%; height: 110px; margin-top: auto; }
+  .eye-ring { fill: none; stroke: var(--ink-3); stroke-width: 1.5; }
+  .eye-pupil { fill: var(--ink); }
+  .eye-target { fill: none; stroke: var(--orange); stroke-width: 1.5; stroke-dasharray: 220; stroke-dashoffset: 220; transition: stroke-dashoffset 1.8s var(--ease); }
+  .is-visible .eye-target { stroke-dashoffset: 0; }
+
+  .stats-band {
+    margin-top: 56px;
+    background: var(--panel);
+    border-radius: 24px;
+    padding: 40px 32px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    color: var(--paper);
+  }
+  .stat-col {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0 16px;
+    border-right: 1px solid rgba(227, 232, 222, 0.12);
+  }
+  .stat-col:last-child { border-right: 0; }
+  .stat-mono {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(227, 232, 222, 0.55);
+  }
+  .stat-value {
+    font-family: var(--serif);
+    font-size: 32px;
+    line-height: 1;
+    letter-spacing: -0.01em;
+    margin: 2px 0 10px;
+  }
+  .stat-value em { color: var(--orange); font-style: italic; }
+
+  .ruler {
+    height: 10px;
+    width: 100%;
+    background: rgba(227, 232, 222, 0.12);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .ruler span {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: var(--paper);
+    transition: width 1.6s var(--ease);
+    border-radius: 999px;
+  }
+  .is-visible .ruler span { width: 80%; }
+
+  .weight-row { display: flex; align-items: center; gap: 12px; }
+  .weight-dot-solid { width: 20px; height: 20px; border-radius: 999px; background: var(--paper); }
+  .weight-dot-dashed { width: 20px; height: 20px; border-radius: 999px; border: 1.5px dashed rgba(227, 232, 222, 0.55); }
+
+  .colour-bar {
+    height: 10px;
+    width: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #0E7C86, #1E6D8E, #164C7C, #3779C6);
+    background-size: 200% 100%;
+    animation: shimmer 3.5s linear infinite;
+  }
+  @keyframes shimmer {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+  }
+
+  .strike-svg { width: 100%; height: 46px; }
+  .strike-curve { fill: none; stroke: var(--orange); stroke-width: 2; stroke-dasharray: 200; stroke-dashoffset: 200; transition: stroke-dashoffset 1.6s var(--ease); }
+  .is-visible .strike-curve { stroke-dashoffset: 0; }
+
+  .notes-closer {
+    margin-top: 72px;
+    text-align: center;
+    font-family: var(--serif);
+    font-size: 28px;
+    line-height: 1.25;
+    color: var(--ink);
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .cta-row-centered {
+    margin-top: 28px;
+    text-align: center;
+  }
+
+  /* ---------- reveal animations on scroll ---------- */
+  .r-scroll {
+    opacity: 0;
+    transform: translateY(28px);
+    transition:
+      opacity 0.9s var(--ease),
+      transform 0.9s var(--ease);
+    transition-delay: calc(var(--d, 0) * 90ms);
+  }
+  .r-scroll.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ---------- responsive ≤ 900px ---------- */
+  @media (max-width: 900px) {
+    .nav { padding: 16px; grid-template-columns: 1fr auto; }
+    .nav-links { display: none; }
+    .nav-right .signin { display: none; }
+    .giant-word { font-size: 22vw; top: 10vh; }
+    .hero { height: auto; min-height: 100svh; }
+    .hero-grid {
+      grid-template-columns: 1fr;
+      padding: 46svh 16px 90px;
+      gap: 32px;
+    }
+    .hero-copy { margin-top: 0; max-width: 100%; }
+    .legibility {
+      background: linear-gradient(0deg, var(--bg) 0%, var(--bg) 44%, transparent 70%);
+    }
+    .hero-cluster { width: 100%; }
+    .card.card-2 { transform: none; }
+    .bottom-strip {
+      position: relative;
+      bottom: auto;
+      padding: 20px 16px 80px;
+      grid-template-columns: 1fr;
+      text-align: center;
+    }
+    .strip-right { justify-content: center; }
+    .field-notes { padding: 72px 16px 96px; }
+    .notes-header { grid-template-columns: 1fr; gap: 24px; margin-bottom: 36px; }
+    .bento { grid-template-columns: 1fr; grid-auto-rows: auto; }
+    .note-dark, .note-span-2 { grid-column: auto; grid-row: auto; }
+    .stats-band { grid-template-columns: 1fr 1fr; padding: 28px 16px; }
+    .stat-col { border-right: 0; border-bottom: 1px solid rgba(227, 232, 222, 0.12); padding: 8px 10px; }
+    .stat-col:nth-child(odd) { border-right: 1px solid rgba(227, 232, 222, 0.12); border-bottom: 1px solid rgba(227, 232, 222, 0.12); }
+    .stat-col:nth-last-child(-n+2) { border-bottom: 0; }
+  }
+</style>
+</head>
+
+<body>
+
+<main class="hero" id="hero" aria-label="Kingfisher hero">
+  <!-- hero video (background) -->
+  <video
+    id="hero-video"
+    class="hero-video"
+    src="https://thinkingods.com/demos/kingfisher-hero/hero.mp4"
+    muted
+    playsinline
+    preload="auto"
+    aria-hidden="true"
+  ></video>
+
+  <!-- giant backdrop word -->
+  <h1 class="giant-word" aria-hidden="true">King<em>fisher</em></h1>
+
+  <!-- legibility overlay -->
+  <div class="legibility" aria-hidden="true"></div>
+
+  <!-- nav -->
+  <nav class="nav rv" style="--d:0" aria-label="Primary">
+    <a href="#" class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 15c2 2 7 3 11 1 4-2 7-6 7-10-3 1-6 2-10 4-4 2-7 3-8 5z" fill="#10201F"/>
+          <circle cx="18" cy="7" r="1.4" fill="#E8732A"/>
+        </svg>
+      </span>
+      KINGFISHER
+    </a>
+    <div class="nav-links">
+      <a href="#">Library</a>
+      <a href="#">Templates</a>
+      <a href="#">Prompts</a>
+      <a href="#">Pricing</a>
+    </div>
+    <div class="nav-right">
+      <a class="signin" href="#">Sign in</a>
+      <a class="pill-dark" href="#">Get access</a>
+    </div>
+  </nav>
+
+  <!-- grid: copy + cluster -->
+  <div class="hero-grid">
+    <section class="hero-copy">
+      <p class="eyebrow rv" style="--d:1">Cinematic Prompt Library</p>
+      <h2 class="h1-serif rv" style="--d:2">
+        Websites that land with <em>precision</em>
+      </h2>
+      <p class="lede rv" style="--d:3">
+        One prompt library for pages that choose their moment: footage that waits,
+        copy that reveals in sequence, and composition that makes the subject win
+        without masking a pixel.
+      </p>
+      <div class="cta-row rv" style="--d:4">
+        <a class="cta-primary" href="#">
+          Get access <span class="arrow" aria-hidden="true">→</span>
+        </a>
+        <a class="cta-sub" href="#">Watch a build ↗</a>
+      </div>
+    </section>
+
+    <aside class="hero-cluster">
+      <div class="trust-row rv" style="--d:5">
+        <span class="avatars" aria-hidden="true">
+          <span class="avatar"></span>
+          <span class="avatar"></span>
+          <span class="avatar"></span>
+          <span class="avatar"></span>
+        </span>
+        Built by 240+ studios
+      </div>
+
+      <div class="cards">
+        <article class="card card-1 rv" style="--d:6">
+          <p class="card-head">PROMPTS / 01</p>
+          <div class="thumb" data-crop="0.555,0.335,0.22">
+            <canvas aria-hidden="true"></canvas>
+            <span class="thumb-caption">Beak crop · 220px</span>
+          </div>
+          <p class="stat-serif">Copy · Paste</p>
+          <div class="dots" aria-hidden="true"><span></span><span></span><span></span></div>
+        </article>
+        <article class="card card-2 rv" style="--d:7">
+          <p class="card-head">MOTION / 02</p>
+          <div class="thumb" data-crop="0.43,0.60,0.24">
+            <canvas aria-hidden="true"></canvas>
+            <span class="thumb-caption">Wing · 240px</span>
+          </div>
+          <p class="stat-serif">60fps</p>
+          <div class="dots" aria-hidden="true"><span></span><span></span><span></span></div>
+        </article>
+      </div>
+    </aside>
+  </div>
+
+  <!-- bottom strip -->
+  <div class="bottom-strip rv" style="--d:8">
+    <div class="strip-left">
+      <span class="strip-mono">Species 01</span>
+      <span class="strip-serif-italic">Alcedo atthis</span>
+    </div>
+    <div class="strip-center">Delhi NCR · 28.61° N</div>
+    <div class="strip-right">
+      <button class="replay" type="button" id="replay-btn">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M3 3v6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Replay
+      </button>
+    </div>
+  </div>
+</main>
+
+<!-- ================================= below the fold -->
+<section class="field-notes">
+  <div class="notes-inner">
+    <header class="notes-header">
+      <div>
+        <p class="kicker r-scroll" style="--d:0"><span class="idx">02</span>Field Notes — Why a Kingfisher</p>
+        <h2 class="h2-serif r-scroll" style="--d:1">
+          It waits, reads the water, then lands in one clean motion
+        </h2>
+      </div>
+      <p class="notes-para r-scroll" style="--d:2">
+        The kingfisher is a lesson in patience and precision — four short field
+        notes on why its physics, optics and timing map almost perfectly to how
+        a good landing page behaves.
+      </p>
+    </header>
+
+    <div class="bento">
+      <!-- note 1 (dark, span 2 rows) -->
+      <article class="note note-dark r-scroll" style="--d:0" data-reveal>
+        <span class="note-idx">Note 01 · Hydrodynamics</span>
+        <h3 class="note-title">The beak that reshaped the Shinkansen</h3>
+        <p class="note-body">
+          A Japanese engineer studying bird strikes watched a kingfisher pierce
+          water with no splash. The 500-series bullet train's nose was redrawn
+          to the same taper and emerged quieter, faster, less thirsty.
+        </p>
+        <svg class="dive-svg" viewBox="0 0 400 180" aria-hidden="true">
+          <text class="dive-label" x="18" y="36">PERCH</text>
+          <circle class="dive-dot" cx="24" cy="52" r="4" />
+          <path class="dive-arc" d="M30 56 Q 150 60 220 110 T 370 160" />
+          <text class="dive-label" x="320" y="152">ENTRY</text>
+          <circle class="dive-dot" cx="370" cy="160" r="4" />
+        </svg>
+      </article>
+
+      <!-- note 2 (light) structural colour -->
+      <article class="note note-light r-scroll" style="--d:1" data-reveal>
+        <span class="note-idx">Note 02 · Pigment</span>
+        <h3 class="note-title">Blue without a drop of blue</h3>
+        <p class="note-body">
+          The kingfisher's teal isn't pigment — it's structural colour,
+          produced by light scattering off microscopic feather geometry.
+          The hue shifts with the angle you watch from.
+        </p>
+        <div class="swatches" aria-hidden="true">
+          <span class="swatch"></span>
+          <span class="swatch"></span>
+          <span class="swatch"></span>
+        </div>
+      </article>
+
+      <!-- note 3 (light) membrane -->
+      <article class="note note-light r-scroll" style="--d:2" data-reveal>
+        <span class="note-idx">Note 03 · Optics</span>
+        <h3 class="note-title">The third eyelid</h3>
+        <p class="note-body">
+          Just before the strike, a nictitating membrane sweeps across the eye
+          — a transparent lens that corrects for the refractive jump between
+          air and water the instant it's needed.
+        </p>
+        <svg class="eye-svg" viewBox="0 0 300 110" aria-hidden="true">
+          <ellipse class="eye-ring" cx="150" cy="55" rx="110" ry="38" />
+          <ellipse class="eye-ring" cx="150" cy="55" rx="48" ry="22" />
+          <circle class="eye-pupil" cx="150" cy="55" r="7" />
+          <path class="eye-target" d="M60 55 Q 150 90 240 55" />
+        </svg>
+      </article>
+
+      <!-- note 4 (light, span 2 cols) waiting still -->
+      <article class="note note-light note-span-2 r-scroll" style="--d:3" data-reveal>
+        <span class="note-idx">Note 04 · Timing</span>
+        <h3 class="note-title">The payoff lives inside the stillness</h3>
+        <p class="note-body">
+          A kingfisher will perch motionless for minutes before a one-second
+          dive. The best landing pages do the same — nothing moves until the
+          subject has arrived.
+        </p>
+      </article>
+    </div>
+
+    <!-- stats band -->
+    <div class="stats-band r-scroll" style="--d:0" data-reveal>
+      <div class="stat-col">
+        <span class="stat-mono">Length</span>
+        <p class="stat-value">16 cm</p>
+        <div class="ruler" aria-hidden="true"><span></span></div>
+      </div>
+      <div class="stat-col">
+        <span class="stat-mono">Weight</span>
+        <p class="stat-value">~40 g</p>
+        <div class="weight-row" aria-hidden="true">
+          <span class="weight-dot-solid"></span>
+          <span class="weight-dot-dashed"></span>
+        </div>
+      </div>
+      <div class="stat-col">
+        <span class="stat-mono">Colour</span>
+        <p class="stat-value">Zero</p>
+        <div class="colour-bar" aria-hidden="true"></div>
+      </div>
+      <div class="stat-col">
+        <span class="stat-mono">Strike</span>
+        <p class="stat-value"><em>One dive</em></p>
+        <svg class="strike-svg" viewBox="0 0 200 46" aria-hidden="true">
+          <path class="strike-curve" d="M4 36 Q 70 4 196 42" />
+        </svg>
+      </div>
+    </div>
+
+    <p class="notes-closer r-scroll" style="--d:0" data-reveal>
+      Build the page the bird would build. Patient, then exact.
+    </p>
+    <div class="cta-row-centered r-scroll" style="--d:1" data-reveal>
+      <a class="cta-primary" href="#">
+        Get access <span class="arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<script>
+(() => {
+  const hero = document.getElementById('hero');
+  const video = document.getElementById('hero-video');
+  const replay = document.getElementById('replay-btn');
+
+  const REVEAL_AT = 4.3;          // seconds — when the bird lands
+  const HARD_TIMEOUT_MS = 9000;   // fallback: reveal no matter what
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  let revealed = false;
+  let thumbsDrawn = false;
+  let timeoutId = null;
+
+  // ---------- 1. match page bg to video pixel (top-right 94%, 12%) ----------
+  function sampleBg() {
+    try {
+      const w = video.videoWidth, h = video.videoHeight;
+      if (!w || !h) return;
+      const c = document.createElement('canvas');
+      c.width = 1; c.height = 1;
+      const ctx = c.getContext('2d');
+      const sx = Math.floor(w * 0.94), sy = Math.floor(h * 0.12);
+      ctx.drawImage(video, sx, sy, 1, 1, 0, 0, 1, 1);
+      const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+      const bg = 'rgb(' + r + ',' + g + ',' + b + ')';
+      const ghost = 'rgb(' + Math.round(r * 0.955) + ',' + Math.round(g * 0.955) + ',' + Math.round(b * 0.955) + ')';
+      document.documentElement.style.setProperty('--bg', bg);
+      document.documentElement.style.setProperty('--ghost', ghost);
+    } catch (e) {
+      // readPixels is blocked on file:// — the CSS defaults stay.
+    }
+  }
+
+  // ---------- 2. reveal the UI ----------
+  function reveal() {
+    if (revealed) return;
+    revealed = true;
+    hero.classList.add('is-revealed');
+    clearTimeout(timeoutId);
+    drawThumbs();
+  }
+
+  // ---------- 3. draw thumbnails from the final frame ----------
+  function drawThumbs() {
+    if (thumbsDrawn) return;
+    const thumbs = document.querySelectorAll('.thumb');
+    const w = video.videoWidth, h = video.videoHeight;
+    if (!w || !h) return;
+    thumbs.forEach(t => {
+      const [cx, cy, size] = t.dataset.crop.split(',').map(Number);
+      const canvas = t.querySelector('canvas');
+      const parent = t.getBoundingClientRect();
+      const px = Math.max(2, Math.round(parent.width));
+      canvas.width = px;
+      canvas.height = px;
+      const ctx = canvas.getContext('2d');
+      const sw = w * size, sh = h * size;
+      const sx = Math.max(0, Math.min(w - sw, w * cx - sw / 2));
+      const sy = Math.max(0, Math.min(h - sh, h * cy - sh / 2));
+      try {
+        ctx.drawImage(video, sx, sy, sw, sh, 0, 0, px, px);
+        t.classList.add('has-image');
+      } catch (e) {
+        // leave the placeholder gradient visible
+      }
+    });
+    thumbsDrawn = true;
+  }
+
+  // ---------- 4. choreography ----------
+  function onTimeupdate() {
+    if (video.currentTime >= REVEAL_AT) reveal();
+  }
+  video.addEventListener('loadeddata', sampleBg, { once: true });
+  video.addEventListener('timeupdate', onTimeupdate);
+  video.addEventListener('ended', reveal);
+  video.addEventListener('error', reveal);
+  if (video.readyState >= 2) sampleBg();
+
+  // Start playback
+  const tryPlay = () => {
+    const p = video.play();
+    if (p && typeof p.catch === 'function') p.catch(() => reveal());
+  };
+  if (prefersReduced) {
+    // Jump straight to end + reveal instantly, no transitions
+    document.documentElement.style.setProperty('--d', '0');
+    const r = document.createElement('style');
+    r.textContent = '.rv,.r-scroll{transition:none !important;}';
+    document.head.appendChild(r);
+    video.addEventListener('loadeddata', () => {
+      try { video.currentTime = Math.max(0, (video.duration || REVEAL_AT) - 0.1); } catch (e) {}
+      reveal();
+    }, { once: true });
+  } else {
+    tryPlay();
+  }
+  // Hard fallback: never leave the page blank
+  timeoutId = setTimeout(reveal, HARD_TIMEOUT_MS);
+
+  // ---------- 5. replay ----------
+  if (replay) {
+    replay.addEventListener('click', () => {
+      hero.classList.remove('is-revealed');
+      document.querySelectorAll('.thumb').forEach(t => t.classList.remove('has-image'));
+      thumbsDrawn = false;
+      revealed = false;
+      try {
+        video.currentTime = 0;
+        tryPlay();
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(reveal, HARD_TIMEOUT_MS);
+      } catch (e) { reveal(); }
+    });
+  }
+
+  // ---------- 6. in-view reveals (below the fold) ----------
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('is-visible');
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.18 });
+  document.querySelectorAll('.r-scroll').forEach(el => io.observe(el));
+  // Separate observer for animated SVG parents (dive, eye, strike, ruler)
+  const svgIo = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('is-visible');
+        svgIo.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.35 });
+  document.querySelectorAll('[data-reveal]').forEach(el => svgIo.observe(el));
+})();
+</script>
+
+</body>
+</html>
