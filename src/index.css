@@ -1,0 +1,223 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---------------------------------------------------------------- base
+   Base typography, scroll behaviour and dark-mode body colour.
+   Fonts are preloaded in index.html so the FOUT is minimal.
+*/
+html {
+  scroll-behavior: smooth;
+  font-feature-settings: "cv11", "ss01", "ss03";
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  @apply bg-brand-cream text-neutral-900 antialiased transition-colors duration-300;
+  font-family: theme("fontFamily.sans");
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.dark body {
+  @apply bg-neutral-950 text-neutral-100;
+}
+
+h1, h2, h3, h4, h5, h6, .font-display {
+  font-family: theme("fontFamily.display");
+  letter-spacing: -0.01em;
+}
+
+/* ---------------------------------------------------------------- motion
+   Honour the OS "reduce motion" preference. Any animated utility added
+   above is neutralised when the user asks for less motion.
+*/
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------------------------------------------------------------- cards
+   Glassmorphism retained for the cream theme, but with a stronger
+   border for AA contrast and a subtle lift on hover.
+*/
+.glass-card {
+  @apply rounded-2xl border border-white/60 bg-white/80 shadow-glass
+    backdrop-blur-md transition-shadow duration-200 ease-out
+    dark:border-white/10 dark:bg-neutral-900/70;
+}
+
+.glass-card:hover {
+  @apply shadow-card-hover;
+}
+
+.card-flat {
+  @apply rounded-2xl border border-neutral-200/70 bg-white shadow-card
+    transition-shadow duration-200 ease-out
+    dark:border-neutral-800 dark:bg-neutral-900;
+}
+
+.card-flat:hover {
+  @apply shadow-card-hover;
+}
+
+/* ---------------------------------------------------------------- buttons
+   Three reusable button classes. Each one carries hover, active, focus
+   and disabled states; the sizing hits a minimum 44x44 touch target by
+   default so links on mobile remain comfortable.
+*/
+.btn {
+  @apply inline-flex min-h-[44px] items-center justify-center gap-2
+    rounded-xl px-5 py-2.5 text-sm font-semibold
+    transition-all duration-150 ease-out
+    focus-visible:outline-none focus-visible:ring-2
+    focus-visible:ring-offset-2 focus-visible:ring-offset-brand-cream
+    disabled:cursor-not-allowed disabled:opacity-60
+    dark:focus-visible:ring-offset-neutral-950;
+}
+
+.btn-primary {
+  @apply btn bg-brand-red text-white shadow-sm
+    hover:bg-brand-red-dark hover:shadow-md
+    active:translate-y-px
+    focus-visible:ring-brand-red/40;
+}
+
+.btn-secondary {
+  @apply btn bg-brand-yellow text-neutral-900 shadow-sm
+    hover:bg-brand-yellow-dark hover:shadow-md
+    active:translate-y-px
+    focus-visible:ring-brand-yellow/50;
+}
+
+.btn-ghost {
+  @apply btn border border-neutral-300 bg-white text-neutral-800
+    hover:bg-neutral-50 hover:border-neutral-400
+    active:translate-y-px
+    focus-visible:ring-brand-green/40
+    dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100
+    dark:hover:bg-neutral-800;
+}
+
+/* ---------------------------------------------------------------- badges */
+.badge {
+  @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5
+    text-xs font-semibold;
+}
+
+/* ---------------------------------------------------------------- reveal
+   Choreographed reveal for hero content once the hero video's subject
+   lands. Each .rv element carries an inline --d (0..n) which drives the
+   stagger: delay = d * 90ms. Honour prefers-reduced-motion.
+*/
+.rv {
+  opacity: 0;
+  transform: translateY(18px);
+  filter: blur(6px);
+  transition:
+    opacity 0.9s cubic-bezier(0.2, 0.7, 0.1, 1),
+    transform 0.9s cubic-bezier(0.2, 0.7, 0.1, 1),
+    filter 0.9s cubic-bezier(0.2, 0.7, 0.1, 1);
+  transition-delay: calc(var(--d, 0) * 90ms);
+  will-change: transform, opacity, filter;
+}
+.is-revealed .rv {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+}
+
+/* ---------------------------------------------------------------- page motion */
+.page-enter {
+  animation: pageFade 0.45s cubic-bezier(0.2, 0, 0, 1) both;
+}
+
+@keyframes pageFade {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---------------------------------------------------------------- skeleton */
+.skeleton {
+  @apply relative overflow-hidden rounded-md bg-neutral-200 dark:bg-neutral-800;
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.55),
+    transparent
+  );
+  animation: shimmer 1.6s infinite;
+}
+
+.dark .skeleton::after {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.08),
+    transparent
+  );
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* ---------------------------------------------------------------- focus
+   Keyboard focus uses the brand green (higher contrast on both themes
+   than the previous red, and semantically neutral — red is reserved for
+   destructive/attention states on this app).
+*/
+:focus-visible {
+  outline: 2px solid #047857;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.dark :focus-visible {
+  outline-color: #F59E0B;
+}
+
+/* ---------------------------------------------------------------- scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply rounded-full bg-brand-yellow/60 hover:bg-brand-yellow;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+/* ---------------------------------------------------------------- utility
+   `.tabular-nums` for stat tiles so numbers don't shift width as they
+   count up. Already in Tailwind as a utility but we want it as a class.
+*/
+.lining-nums {
+  font-feature-settings: "lnum" 1, "tnum" 1;
+}

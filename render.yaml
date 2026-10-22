@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: challapalli-people-api
+    runtime: node
+    rootDir: server
+    plan: free
+    buildCommand: npm install && npx prisma generate
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      # Everything else (DATABASE_URL, DIRECT_URL, JWT_SECRET, CORS_ORIGIN,
+      # R2_*, MSG91_*) has no safe default — set these in the Render
+      # dashboard's Environment tab, not here. See server/.env.example.

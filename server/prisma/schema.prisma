@@ -1,0 +1,273 @@
+// Prisma schema for Supabase Postgres.
+//
+// Enum-like fields (role, category, status, priority, language, otp purpose)
+// are kept as plain String columns validated in application code, matching
+// the original Mongoose `enum: [...]` behavior — several of the real values
+// contain spaces/ampersands ("Ward Admin", "Roads & Transport", "Waiting
+// for Funds"), which native Postgres enum identifiers can't represent
+// cleanly. CHECK constraints enforcing these are added in the migration SQL.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  // Pooled connection (port 6543) — used by the running app. Supabase's
+  // transaction-mode pooler doesn't support the prepared statements/DDL that
+  // migrations need, so those go through directUrl instead.
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id                 String   @id @default(uuid()) @db.Uuid
+  name               String
+  phone              String   @unique
+  passwordHash       String   @map("password_hash")
+  role               String   @default("Resident")
+  wardId           String?  @map("ward_id")
+  preferredLanguage  String   @default("en") @map("preferred_language")
+  // Forgot-password-by-security-question. Nullable because accounts created
+  // before this feature existed won't have one set — their only reset path
+  // remains the admin-mediated one in the Users panel.
+  securityQuestionId String?  @map("security_question_id")
+  securityAnswerHash String?  @map("security_answer_hash")
+  // Bumped on every password reset; embedded in issued JWTs so a reset
+  // instantly invalidates every session signed before it.
+  tokenVersion       Int      @default(0) @map("token_version")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  reportedProblems    Problem[]        @relation("ReportedBy")
+  postedAnnouncements Announcement[]
+  volunteerProfile    Volunteer?
+  supportedProblems   ProblemSupport[]
+  passwordResets      PasswordReset[]
+
+  @@map("users")
+}
+
+// One row per forgot-password attempt. `attempts` caps security-answer
+// guesses independent of the general per-IP authLimiter; `tokenHash` is only
+// populated once the answer is verified, and is the single-use credential
+// the final reset-password step must present.
+model PasswordReset {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @map("user_id") @db.Uuid
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  attempts   Int       @default(0)
+  tokenHash  String?   @map("token_hash")
+  verifiedAt DateTime? @map("verified_at")
+  usedAt     DateTime? @map("used_at")
+  expiresAt  DateTime  @map("expires_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@map("password_resets")
+}
+
+model Problem {
+  id                String   @id @default(uuid()) @db.Uuid
+  title             String
+  description       String
+  category          String
+  photo             String?
+  constituency      String   @default("Challapalli Gram Panchayat")
+  wardId          String   @map("ward_id")
+  wardName        String   @map("ward_name")
+  landmark          String?  @default("")
+  status            String   @default("New")
+  priority          String   @default("Medium")
+  lat               Float?
+  lng               Float?
+  reportedById      String   @map("reported_by") @db.Uuid
+  reportedBy        User     @relation("ReportedBy", fields: [reportedById], references: [id])
+  reportedByName    String   @map("reported_by_name")
+  reportedByPhone   String?  @map("reported_by_phone")
+  supportCount      Int      @default(0) @map("support_count")
+  assignedVolunteer String?  @map("assigned_volunteer")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  photos         ProblemPhoto[]
+  progressPhotos ProgressPhoto[]
+  comments       Comment[]
+  statusHistory  StatusHistory[]
+  supporters     ProblemSupport[]
+
+  @@index([wardId])
+  @@index([status])
+  @@index([priority])
+  @@map("problems")
+}
+
+model ProblemPhoto {
+  id        String   @id @default(uuid()) @db.Uuid
+  problemId String   @map("problem_id") @db.Uuid
+  problem   Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  url       String
+  position  Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([problemId])
+  @@map("problem_photos")
+}
+
+model ProgressPhoto {
+  id        String   @id @default(uuid()) @db.Uuid
+  problemId String   @map("problem_id") @db.Uuid
+  problem   Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  url       String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([problemId])
+  @@map("progress_photos")
+}
+
+// `author` is a plain name string, not a User reference — matches the
+// original Mongoose subdocument exactly (comments are never edited/deleted
+// by their author via a relation, only displayed).
+model Comment {
+  id        String   @id @default(uuid()) @db.Uuid
+  problemId String   @map("problem_id") @db.Uuid
+  problem   Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  author    String
+  text      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([problemId])
+  @@map("comments")
+}
+
+// One row per status change — this is the app's existing "timeline" feature,
+// and also doubles as the "status history" the migration spec asked for.
+model StatusHistory {
+  id        String   @id @default(uuid()) @db.Uuid
+  problemId String   @map("problem_id") @db.Uuid
+  problem   Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  status    String
+  date      DateTime @default(now())
+
+  @@index([problemId])
+  @@map("status_history")
+}
+
+// Many-to-many "upvote" relation (Mongoose's Problem.supportedBy[]). A real
+// unique constraint here replaces what used to be an app-level-only check
+// for "already supported."
+model ProblemSupport {
+  problemId String   @map("problem_id") @db.Uuid
+  problem   Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  userId    String   @map("user_id") @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@id([problemId, userId])
+  @@map("problem_supporters")
+}
+
+model Volunteer {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  wardId  String   @map("ward_id")
+  resolved  Int      @default(0)
+  points    Int      @default(0)
+  userId    String?  @unique @map("user_id") @db.Uuid
+  user      User?    @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([wardId])
+  @@map("volunteers")
+}
+
+model Announcement {
+  id         String   @id @default(uuid()) @db.Uuid
+  title      String
+  body       String
+  wardId   String?  @map("ward_id")
+  postedById String   @map("posted_by") @db.Uuid
+  postedBy   User     @relation(fields: [postedById], references: [id])
+  date       DateTime @default(now())
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("announcements")
+}
+
+model ActivityLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  actor     String
+  action    String
+  date      DateTime @default(now())
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("activity_log")
+}
+
+model OtpCode {
+  id         String    @id @default(uuid()) @db.Uuid
+  phone      String
+  purpose    String
+  codeHash   String    @map("code_hash")
+  expiresAt  DateTime  @map("expires_at")
+  attempts   Int       @default(0)
+  verifiedAt DateTime? @map("verified_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  @@index([phone, purpose])
+  @@map("otp_codes")
+}
+
+// Resident-submitted ideas for improving Challapalli. Separate from problems:
+// a suggestion is forward-looking (what we could do) rather than a grievance
+// (what is broken). `referenceId` is a human-readable short id for displaying
+// in UI and talking about ("SG-00042"); the uuid stays the primary key.
+model Suggestion {
+  id             String   @id @default(uuid()) @db.Uuid
+  referenceId    String   @unique @map("reference_id")
+  title          String
+  description    String
+  category       String
+  wardId         String   @map("ward_id")
+  wardName       String   @map("ward_name")
+  status         String   @default("Submitted")
+  submittedById  String?  @map("submitted_by") @db.Uuid
+  submittedByName String  @map("submitted_by_name")
+  submittedByPhone String? @map("submitted_by_phone")
+  moderationNote String?  @map("moderation_note")
+  supportCount   Int      @default(0) @map("support_count")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@index([wardId])
+  @@index([status])
+  @@map("suggestions")
+}
+
+// Feedback about community services, initiatives and the website itself.
+// `isPublic` controls whether the feedback is listed publicly; even when
+// public, `submittedByName`/`submittedByPhone` are only exposed if
+// `shareContact` is true.
+model Feedback {
+  id              String   @id @default(uuid()) @db.Uuid
+  referenceId     String   @unique @map("reference_id")
+  topic           String
+  message         String
+  rating          Int?
+  wardId          String?  @map("ward_id")
+  submittedById   String?  @map("submitted_by") @db.Uuid
+  submittedByName String?  @map("submitted_by_name")
+  submittedByPhone String? @map("submitted_by_phone")
+  shareContact    Boolean  @default(false) @map("share_contact")
+  isPublic        Boolean  @default(false) @map("is_public")
+  response        String?
+  respondedAt     DateTime? @map("responded_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@index([wardId])
+  @@index([isPublic])
+  @@map("feedback")
+}
