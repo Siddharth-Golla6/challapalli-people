@@ -12,10 +12,6 @@ import {
   Check,
   Palmtree,
   Sailboat,
-  Code2,
-  Server,
-  Database,
-  Image as ImageIcon,
 } from "lucide-react";
 import GlassCard from "../components/GlassCard";
 import { WARDS } from "../data/geography";
@@ -36,39 +32,6 @@ const HOW_IT_WORKS = [
   { icon: Search, titleKey: "about.hw.review", textKey: "about.hw.reviewDesc" },
   { icon: Settings2, titleKey: "about.hw.action", textKey: "about.hw.actionDesc" },
   { icon: CheckCircle2, titleKey: "about.hw.resolution", textKey: "about.hw.resolutionDesc" },
-];
-
-// The canonical production stack. If any of these services changes, update
-// here first — the deploy docs and the Copyright page both reference this.
-const STACK = [
-  {
-    icon: Code2,
-    layerKey: "about.stack.frontend",
-    service: "React + Vite (Tailwind)",
-    tag: "Netlify",
-    detailKey: "about.stack.frontendDetail",
-  },
-  {
-    icon: Server,
-    layerKey: "about.stack.backend",
-    service: "Express API",
-    tag: "Render (free plan)",
-    detailKey: "about.stack.backendDetail",
-  },
-  {
-    icon: Database,
-    layerKey: "about.stack.database",
-    service: "Supabase Postgres",
-    tag: "via Prisma",
-    detailKey: "about.stack.databaseDetail",
-  },
-  {
-    icon: ImageIcon,
-    layerKey: "about.stack.photo",
-    service: "Cloudflare R2",
-    tag: "S3-compatible",
-    detailKey: "about.stack.photoDetail",
-  },
 ];
 
 export default function AboutUs() {
@@ -221,65 +184,6 @@ export default function AboutUs() {
         </div>
       </section>
 
-      {/* Technology stack — the four-layer schema that every deploy follows. */}
-      <section className="border-t border-neutral-200/70 bg-brand-cream px-4 py-14 dark:border-neutral-800 dark:bg-neutral-950 sm:px-6">
-        <div className="mx-auto max-w-4xl">
-          <div className="mb-8 text-center">
-            <p className="mb-2 inline-flex items-center gap-2 rounded-full bg-brand-green/10 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-widest text-brand-green dark:bg-brand-green/15 dark:text-brand-yellow">
-              {t("about.stack.eyebrow")}
-            </p>
-            <h2 className="font-display text-2xl font-extrabold tracking-tight text-neutral-900 dark:text-white sm:text-3xl">
-              {t("about.stack.title")}
-            </h2>
-            <p className="mx-auto mt-2 max-w-xl text-neutral-500 dark:text-neutral-400">
-              {t("about.stack.subtitle")}
-            </p>
-          </div>
-
-          <div className="overflow-hidden rounded-2xl border border-neutral-200/70 bg-white shadow-card dark:border-neutral-800 dark:bg-neutral-900">
-            {/* Table header — hidden on mobile; cards stack vertically there. */}
-            <div className="hidden grid-cols-[140px_1fr_auto] gap-6 border-b border-neutral-200/70 bg-neutral-50 px-5 py-3 text-[11px] font-bold uppercase tracking-wide text-neutral-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-400 sm:grid">
-              <span>{t("about.stack.col.layer")}</span>
-              <span>{t("about.stack.col.service")}</span>
-              <span className="text-right">{t("about.stack.col.hosted")}</span>
-            </div>
-
-            <ul className="divide-y divide-neutral-200/70 dark:divide-neutral-800">
-              {STACK.map(({ icon: Icon, layerKey, service, tag, detailKey }) => (
-                <li
-                  key={layerKey}
-                  className="grid grid-cols-1 gap-1 px-5 py-4 sm:grid-cols-[140px_1fr_auto] sm:items-center sm:gap-6"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-green/10 text-brand-green dark:bg-brand-green/20">
-                      <Icon size={16} strokeWidth={2.25} aria-hidden="true" />
-                    </span>
-                    <span className="font-display text-sm font-bold text-neutral-900 dark:text-white">
-                      {t(layerKey)}
-                    </span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">{service}</p>
-                    <p className="mt-0.5 text-xs leading-relaxed text-neutral-500 dark:text-neutral-400">
-                      {t(detailKey)}
-                    </p>
-                  </div>
-                  <span className="justify-self-start rounded-full bg-brand-yellow/20 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-neutral-800 ring-1 ring-brand-yellow/30 dark:text-brand-yellow sm:justify-self-end">
-                    {tag}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <p className="mt-5 text-center text-xs text-neutral-500 dark:text-neutral-400">
-            {t("about.stack.deployNote")}{" "}
-            <Link to="/copyright" className="font-semibold text-brand-red underline-offset-2 hover:underline">
-              {t("footer.copyrightLink")} →
-            </Link>
-          </p>
-        </div>
-      </section>
     </div>
   );
 }
