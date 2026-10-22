@@ -315,6 +315,7 @@ export default {
   "footer.copyright": "© {year} చల్లపల్లి.పీపుల్. సర్వహక్కులు సురక్షితం.",
   "footer.copyrightLink": "కాపీరైట్ & క్రెడిట్‌లు",
   "footer.unofficialNotice": "ఒక స్వతంత్ర, నివాసులచే నిర్మించబడిన వేదిక — ఇది అధికారిక ప్రభుత్వ వెబ్‌సైట్ కాదు.",
+  "footer.brandNote": "challapalli.people, challapallipeople, లేదా Challapalli People అని కూడా పిలుస్తారు — ఆంధ్రప్రదేశ్, కృష్ణా జిల్లా, చల్లపల్లి గ్రామ పంచాయతీ ప్రజల కోసం పౌర నిమగ్నత. challapallipeople.com",
 
   // Copyright page
   "copyright.eyebrow": "చట్టపరమైనది",
