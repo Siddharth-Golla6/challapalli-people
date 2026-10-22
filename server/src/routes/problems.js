@@ -62,7 +62,7 @@ router.get(
   "/",
   optionalAuth,
   asyncHandler(async (req, res) => {
-    const { wardId, category, priority, status, q } = req.query;
+    const { wardId, category, priority, status, q, nearLat, nearLng, radiusKm } = req.query;
     const staff = isStaff(req.user);
 
     const where = {};
@@ -83,14 +83,42 @@ router.get(
     // filter for status=New explicitly.
     if (!staff) where.AND = [...(where.AND || []), { status: { not: "New" } }];
 
-    const problems = await prisma.problem.findMany({
+    let problems = await prisma.problem.findMany({
       where,
       orderBy: { createdAt: "desc" },
       include: PROBLEM_INCLUDE,
     });
+
+    // Geographic radius filter — Haversine on the small result set we just
+    // fetched. Keeps the DB query untouched (no PostGIS), accurate enough
+    // for a few-km radius inside one gram panchayat, and sorts the matches
+    // by distance so the closest problem appears first.
+    const lat = Number(nearLat);
+    const lng = Number(nearLng);
+    const radius = Number(radiusKm) || 2;
+    if (Number.isFinite(lat) && Number.isFinite(lng)) {
+      problems = problems
+        .filter((p) => Number.isFinite(p.lat) && Number.isFinite(p.lng))
+        .map((p) => ({ p, d: haversineKm(lat, lng, p.lat, p.lng) }))
+        .filter(({ d }) => d <= radius)
+        .sort((a, b) => a.d - b.d)
+        .map(({ p }) => p);
+    }
+
     res.json({ problems: problems.map((p) => toProblemJSON(p, { includeContact: staff })) });
   })
 );
+
+function haversineKm(lat1, lng1, lat2, lng2) {
+  const R = 6371; // Earth's mean radius in km
+  const toRad = (deg) => (deg * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
 
 router.get(
   "/:id",

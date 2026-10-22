@@ -13,6 +13,7 @@ export default {
   "nav.home": "హోమ్",
   "nav.dashboard": "డాష్‌బోర్డ్",
   "nav.report": "సమస్యను నివేదించండి",
+  "nav.myReports": "నా నివేదికలు",
   "nav.solved": "పరిష్కరించిన సమస్యలు",
   "nav.announcements": "ప్రకటనలు",
   "nav.about": "మా గురించి",
@@ -430,7 +431,13 @@ export default {
 
   "admin.reports.title": "నివేదికలు & ఎగుమతి",
   "admin.reports.exportComplaints": "ఫిర్యాదుల ఎగుమతి (CSV)",
+  "admin.reports.exportSuggestions": "సూచనల ఎగుమతి (CSV)",
+  "admin.reports.exportFeedback": "అభిప్రాయ ఎగుమతి (CSV)",
   "admin.reports.exportDesc": "{n} రికార్డులు — Excel/Sheetsలో తెరుస్తుంది",
+  "admin.reports.filterWard": "వార్డు",
+  "admin.reports.filterFrom": "నుండి",
+  "admin.reports.filterTo": "వరకు",
+  "admin.reports.allWards": "అన్ని వార్డులు",
 
   "admin.logs.title": "కార్యకలాప లాగ్‌లు",
   "admin.logs.empty": "ఇంకా ఏ కార్యకలాపం లేదు.",
@@ -619,4 +626,21 @@ export default {
   // Common additions
   "common.yes": "అవును",
   "common.no": "లేదు",
+
+  "myReports.eyebrow": "మీ దాఖలులు",
+  "myReports.title": "నా నివేదికలు",
+  "myReports.subtitle": "మీరు దాఖలు చేసిన ప్రతి ఫిర్యాదు, దాని ప్రస్తుత స్థితి మరియు కాలక్రమంతో.",
+  "myReports.stats.total": "మొత్తం దాఖలులు",
+  "myReports.stats.resolved": "పరిష్కరించబడింది",
+  "myReports.stats.inProgress": "ప్రగతిలో",
+  "myReports.stats.pending": "సమీక్ష కోసం వేచి ఉంది",
+  "myReports.emptyTitle": "మీరు ఇంకా ఏదీ దాఖలు చేయలేదు",
+  "myReports.emptyBody": "గుంత, పాడైన వీధి దీపం లేదా చెత్త కుప్పను గుర్తించారా? ఇక్కడ దాఖలు చేయండి — వార్డు బృందం దానిని నిర్వాహక డాష్‌బోర్డ్‌లో చూస్తుంది.",
+  "myReports.cta": "సమస్యను నివేదించండి",
+  "myReports.nearMe": "నా దగ్గర",
+  "myReports.locating": "స్థానం పొందుతోంది…",
+  "myReports.clearNearby": "అన్నింటినీ చూపించు",
+  "myReports.within2km": "2 కి.మీ లోపు",
+  "myReports.geoUnsupported": "మీ బ్రౌజర్ స్థానాన్ని మద్దతు ఇవ్వదు.",
+  "myReports.geoDenied": "సమీపంలోని సమస్యలను చూడటానికి స్థాన ప్రాప్యతను అనుమతించండి.",
 };

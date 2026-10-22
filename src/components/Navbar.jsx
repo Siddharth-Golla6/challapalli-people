@@ -16,6 +16,7 @@ export default function Navbar() {
   const LINKS = [
     { to: "/dashboard", label: t("nav.home") },
     { to: "/report", label: t("nav.report") },
+    ...(user ? [{ to: "/my-reports", label: t("nav.myReports") }] : []),
     { to: "/voice", label: t("nav.voice") },
     { to: "/solved", label: t("nav.solved") },
     { to: "/announcements", label: t("nav.announcements") },

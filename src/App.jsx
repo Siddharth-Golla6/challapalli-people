@@ -31,6 +31,7 @@ import AboutUs from "./pages/AboutUs";
 import AdminDashboard from "./pages/AdminDashboard";
 import CommunityVoice from "./pages/CommunityVoice";
 import Copyright from "./pages/Copyright";
+import MyReports from "./pages/MyReports";
 import NotFound from "./pages/NotFound";
 
 // Every routed element passes through PageShell, which gives it a shared
@@ -96,6 +97,14 @@ function AnimatedRoutes() {
           element={withLayout(
             <ProtectedRoute>
               <ReportProblem />
+            </ProtectedRoute>
+          )}
+        />
+        <Route
+          path="/my-reports"
+          element={withLayout(
+            <ProtectedRoute>
+              <MyReports />
             </ProtectedRoute>
           )}
         />
