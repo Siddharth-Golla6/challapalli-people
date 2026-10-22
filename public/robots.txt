@@ -1,0 +1,23 @@
+# challapalli.people — robots directives for all crawlers.
+# Public content is indexable; routes that require auth or that only
+# matter to a signed-in resident are closed off so they don't dilute
+# search results.
+
+User-agent: *
+Allow: /
+
+# Don't index the auth, forgot-password and admin flows — they return
+# bare forms and would just be dead weight in Google's index.
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /admin-login
+Disallow: /admin
+Disallow: /my-reports
+
+# API lives on a separate host (challapalli-people-api.onrender.com)
+# but keep this directive here as insurance in case the SPA ever
+# starts proxying through /api.
+Disallow: /api/
+
+Sitemap: https://www.challapallipeople.com/sitemap.xml
