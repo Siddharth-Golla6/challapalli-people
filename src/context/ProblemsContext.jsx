@@ -66,9 +66,17 @@ export function ProblemsProvider({ children }) {
     return replaceOne(problem);
   };
 
+  // One-off geo query — not stored in state because the user's "Near me"
+  // view is a transient slice over the main list, not a replacement for it.
+  const fetchNearby = async ({ lat, lng, radiusKm = 2 }) => {
+    const qs = new URLSearchParams({ nearLat: lat, nearLng: lng, radiusKm }).toString();
+    const { problems: list } = await api.get(`/problems?${qs}`);
+    return list.map(normalize);
+  };
+
   return (
     <ProblemsContext.Provider
-      value={{ problems, loading, error, refresh, addProblem, updateProblem, deleteProblem, addComment, upvote }}
+      value={{ problems, loading, error, refresh, addProblem, updateProblem, deleteProblem, addComment, upvote, fetchNearby }}
     >
       {children}
     </ProblemsContext.Provider>

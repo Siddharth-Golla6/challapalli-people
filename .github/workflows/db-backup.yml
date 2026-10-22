@@ -1,0 +1,77 @@
+# Daily pg_dump of the Supabase Postgres database to a GitHub Actions
+# artifact. Runs at 02:00 Asia/Kolkata (20:30 UTC the previous day). The
+# dump is retained for 30 days; download the latest from the Actions tab.
+#
+# One-time setup:
+#   GitHub repo → Settings → Secrets and variables → Actions → New secret
+#     Name:  DIRECT_URL
+#     Value: the same Supabase direct connection string the Render service
+#            uses (port 5432, NOT the pgbouncer URL). It contains the DB
+#            password; keep it in Actions secrets only, never commit it.
+#
+# Manual trigger: Actions tab → "Daily DB backup" → Run workflow.
+
+name: Daily DB backup
+
+on:
+  schedule:
+    # 20:30 UTC every day = 02:00 IST next day. Picked a quiet window
+    # for the free-tier Supabase instance.
+    - cron: "30 20 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Install Postgres 17 client
+        # Supabase currently serves Postgres 17; the apt-shipped client in
+        # ubuntu-latest is older and refuses to connect with "server
+        # version mismatch". Pull the matching major from the official
+        # Postgres apt repo instead.
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
+            --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+            | sudo tee /etc/apt/sources.list.d/pgdg.list
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-17
+
+      - name: Dump database
+        env:
+          # `pg_dump` reads PGSERVICEFILE/.pgpass or an explicit URI. We
+          # pass the URI as a single arg so the password never appears in
+          # `ps aux` as a separate token.
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+        run: |
+          if [ -z "$DIRECT_URL" ]; then
+            echo "::error::DIRECT_URL secret is not set. See the comment at the top of this workflow."
+            exit 1
+          fi
+          STAMP=$(date -u +"%Y-%m-%d_%H%M%SZ")
+          FILE="supabase-backup-${STAMP}.sql.gz"
+          echo "Writing $FILE"
+          pg_dump "$DIRECT_URL" \
+            --no-owner --no-privileges --format=plain \
+            --exclude-schema=auth --exclude-schema=storage --exclude-schema=realtime \
+            --exclude-schema=supabase_functions --exclude-schema=extensions --exclude-schema=graphql \
+            --exclude-schema=graphql_public --exclude-schema=pgsodium --exclude-schema=pgsodium_masks \
+            --exclude-schema=vault \
+            | gzip -9 > "$FILE"
+          echo "Backup size: $(du -h "$FILE" | cut -f1)"
+          echo "BACKUP_FILE=$FILE" >> $GITHUB_ENV
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.BACKUP_FILE }}
+          path: ${{ env.BACKUP_FILE }}
+          # Free-tier retention cap is 90 days; 30 keeps artifact storage
+          # reasonable while still covering a month's rollback window.
+          retention-days: 30
+          if-no-files-found: error

@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { PieChart as PieChartIcon, CheckCircle2, AlertCircle, Clock, Users as UsersIcon, ArrowRight } from "lucide-react";
+import { PieChart as PieChartIcon, CheckCircle2, AlertCircle, Clock, Users as UsersIcon, ArrowRight, MapPin, X as XIcon } from "lucide-react";
 import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid,
 } from "recharts";
@@ -25,10 +25,45 @@ export default function Dashboard() {
   const { t } = useLang();
   const ready = useDelayedReady(500);
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
-  const { problems } = useProblems();
+  const { problems, fetchNearby } = useProblems();
   const { volunteers } = useVolunteers();
 
-  const filteredProblems = useMemo(() => applyFilters(problems, filters), [problems, filters]);
+  // "Near me" overlay — when set, replaces the main grid with a server-side
+  // Haversine filter around the user's current GPS. Cleared with the X chip.
+  const [nearby, setNearby] = useState(null);
+  const [nearbyLoading, setNearbyLoading] = useState(false);
+  const [nearbyError, setNearbyError] = useState("");
+
+  const requestNearby = () => {
+    if (!navigator.geolocation) {
+      setNearbyError(t("myReports.geoUnsupported"));
+      return;
+    }
+    setNearbyLoading(true);
+    setNearbyError("");
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const list = await fetchNearby({ lat: pos.coords.latitude, lng: pos.coords.longitude, radiusKm: 2 });
+          setNearby({ list, lat: pos.coords.latitude, lng: pos.coords.longitude });
+        } catch (err) {
+          setNearbyError(err.message || "Failed to fetch nearby problems.");
+        } finally {
+          setNearbyLoading(false);
+        }
+      },
+      () => {
+        setNearbyLoading(false);
+        setNearbyError(t("myReports.geoDenied"));
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  };
+
+  const filteredProblems = useMemo(
+    () => (nearby ? nearby.list : applyFilters(problems, filters)),
+    [problems, filters, nearby]
+  );
 
   const stats = useMemo(() => {
     const total = problems.length;
@@ -248,9 +283,39 @@ export default function Dashboard() {
           </Link>
         </div>
 
-        <div className="mb-6">
-          <ProblemFilters filters={filters} onChange={setFilters} />
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={requestNearby}
+            disabled={nearbyLoading}
+            className="inline-flex items-center gap-1.5 rounded-full border border-brand-red/30 bg-brand-red/10 px-3 py-1.5 text-xs font-semibold text-brand-red transition hover:bg-brand-red/15 disabled:opacity-50 dark:border-brand-red/40"
+          >
+            <MapPin size={13} />
+            {nearbyLoading ? t("myReports.locating") : t("myReports.nearMe")}
+          </button>
+          {nearby && (
+            <button
+              type="button"
+              onClick={() => setNearby(null)}
+              className="inline-flex items-center gap-1 rounded-full border border-neutral-300 px-3 py-1.5 text-xs font-semibold text-neutral-600 transition hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
+            >
+              <XIcon size={12} /> {t("myReports.clearNearby")}
+            </button>
+          )}
+          {nearbyError && (
+            <span className="text-xs text-brand-red">{nearbyError}</span>
+          )}
+          {nearby && (
+            <span className="text-xs text-neutral-500 dark:text-neutral-400">
+              {nearby.list.length} {t("myReports.within2km")}
+            </span>
+          )}
         </div>
+        {!nearby && (
+          <div className="mb-6">
+            <ProblemFilters filters={filters} onChange={setFilters} />
+          </div>
+        )}
 
         {!ready ? (
           <CardGridSkeleton count={6} />
