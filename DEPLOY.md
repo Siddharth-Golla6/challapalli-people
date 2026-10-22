@@ -3,7 +3,7 @@
 Two moving parts:
 
 1. **Frontend** — React + Vite, hosted on **Netlify** (already live at
-   https://challapalli-people.netlify.app).
+   https://challapallipeople.com).
 2. **Backend** — Express + Prisma, deploys to **Render** (free tier). Needs a
    Supabase Postgres database and, if you want photo uploads to work in
    production, a Cloudflare R2 bucket.
@@ -69,7 +69,7 @@ git push -u origin main
    - `DATABASE_URL` — Supabase pooled URL
    - `DIRECT_URL` — Supabase direct URL
    - `JWT_SECRET` — any long random string (`openssl rand -base64 48`)
-   - `CORS_ORIGIN` — `https://challapalli-people.netlify.app`
+   - `CORS_ORIGIN` — `https://challapallipeople.com`
    - (Optional, enables photo uploads) `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_PUBLIC_URL`
    - (Optional, enables real SMS/OTP) `MSG91_API_KEY`, `MSG91_SENDER_ID` and the `MSG91_TEMPLATE_ID_*` set — see `server/.env.example`.
 5. Deploy. Render gives you a URL like `https://challapalli-people-api.onrender.com` after ~3 minutes.
@@ -97,7 +97,7 @@ The Netlify build bakes the real backend URL into the bundle. The site calls Ren
 
 ## 3 · Verifying the full stack
 
-- Visit https://challapalli-people.netlify.app and log in as `9876500001 / demo1234` — the Dashboard loads but is empty.
+- Visit https://challapallipeople.com and log in as `9876500001 / demo1234` — the Dashboard loads but is empty.
 - Report a problem — refresh, it should still be there (coming from Supabase, not browser memory).
 - Log in as Administrator (`9876500000 / demo1234`) — Admin dashboard shows the complaint with a Verify button.
 - Verify it — the resident view now shows the complaint publicly.
