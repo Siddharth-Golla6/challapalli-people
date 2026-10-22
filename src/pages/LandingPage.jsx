@@ -19,8 +19,8 @@ const FEATURES = [
 // Credit lives on the /copyright page.
 const HERO_VIDEO = "/hero-kingfisher.mp4";
 const PLAYBACK_RATE = 1.0;
-const REVEAL_AT = 1.2; // the clip is a perched bird, so reveal content quickly
-const HARD_TIMEOUT = 5000;
+const REVEAL_AT = 0.6; // show the headline fast — well under a second
+const HARD_TIMEOUT = 1500;
 
 export default function LandingPage() {
   const { t } = useLang();
