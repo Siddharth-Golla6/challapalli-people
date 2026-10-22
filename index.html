@@ -4,9 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
-    <!-- Icons -->
+    <!-- Icons: yellow challapalli circular mark, raster so legacy browsers +
+         WhatsApp share previews render it correctly. The SVG is kept as a
+         fallback link in case the PNGs 404 during a half-deployed build. -->
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="icon" href="/logo-192.png" sizes="192x192" type="image/png" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="shortcut icon" href="/favicon-32.png" type="image/png" />
 
     <!-- Page title + core description. Keep description under ~160
          characters so Google doesn't truncate it in search results. -->
@@ -35,7 +40,9 @@
       property="og:description"
       content="Report civic issues, share suggestions and give feedback across the 18 wards of Challapalli Gram Panchayat. Bilingual (English + Telugu), free, open."
     />
-    <meta property="og:image" content="https://challapalli-people.netlify.app/og-cover.svg" />
+    <meta property="og:image" content="https://challapalli-people.netlify.app/logo-512.png" />
+    <meta property="og:image:width" content="512" />
+    <meta property="og:image:height" content="512" />
     <meta property="og:image:alt" content="challapalli.people — civic engagement platform for all 18 wards of Challapalli Gram Panchayat" />
     <meta property="og:locale" content="en_IN" />
     <meta property="og:locale:alternate" content="te_IN" />
@@ -47,7 +54,7 @@
       name="twitter:description"
       content="Report civic issues, share suggestions and give feedback across the 18 wards of Challapalli Gram Panchayat. Bilingual (English + Telugu), free, open."
     />
-    <meta name="twitter:image" content="https://challapalli-people.netlify.app/og-cover.svg" />
+    <meta name="twitter:image" content="https://challapalli-people.netlify.app/logo-512.png" />
     <meta name="twitter:image:alt" content="challapalli.people — civic engagement platform for all 18 wards of Challapalli Gram Panchayat" />
 
     <!-- Fonts: preconnect + preload the stylesheet so FOUT is minimal. -->
@@ -79,7 +86,7 @@
             "name": "challapalli.people",
             "alternateName": "Challapalli Gram Panchayat Platform",
             "url": "https://challapalli-people.netlify.app/",
-            "logo": "https://challapalli-people.netlify.app/favicon.svg",
+            "logo": "https://challapalli-people.netlify.app/logo-512.png",
             "slogan": "Your Ward. Your Voice. Our Challapalli.",
             "areaServed": {
               "@type": "AdministrativeArea",
