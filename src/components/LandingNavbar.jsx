@@ -1,12 +1,17 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronDown, LogIn, Menu, X, Languages } from "lucide-react";
+import { ChevronDown, LogIn, Menu, X, Languages, LayoutDashboard } from "lucide-react";
 import { useLang } from "../context/LanguageContext";
+import { useAuth } from "../context/AuthContext";
 
 export default function LandingNavbar() {
   const [dashboardsOpen, setDashboardsOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const { lang, toggleLang, t } = useLang();
+  // Signed-in visitors get a Dashboard shortcut instead of a Login button.
+  // No "Logout" here — this bar is for first-impression polish; account
+  // actions live on the signed-in Navbar on every other route.
+  const { user } = useAuth();
 
   const DASHBOARD_LINKS = [
     { to: "/dashboard", label: t("nav.communityDashboard") },
@@ -76,12 +81,21 @@ export default function LandingNavbar() {
             <Languages size={14} />
             {lang === "en" ? "తె" : "EN"}
           </button>
-          <Link
-            to="/login"
-            className="inline-flex items-center gap-2 rounded-full bg-brand-yellow px-5 py-2.5 text-sm font-bold text-neutral-900 shadow-md transition hover:-translate-y-0.5 hover:bg-brand-yellow-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-green focus-visible:ring-offset-2 focus-visible:ring-offset-brand-cream"
-          >
-            <LogIn size={16} /> {t("nav.login")}
-          </Link>
+          {user ? (
+            <Link
+              to="/dashboard"
+              className="inline-flex items-center gap-2 rounded-full bg-brand-yellow px-5 py-2.5 text-sm font-bold text-neutral-900 shadow-md transition hover:-translate-y-0.5 hover:bg-brand-yellow-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-green focus-visible:ring-offset-2 focus-visible:ring-offset-brand-cream"
+            >
+              <LayoutDashboard size={16} /> {t("nav.dashboard")}
+            </Link>
+          ) : (
+            <Link
+              to="/login"
+              className="inline-flex items-center gap-2 rounded-full bg-brand-yellow px-5 py-2.5 text-sm font-bold text-neutral-900 shadow-md transition hover:-translate-y-0.5 hover:bg-brand-yellow-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-green focus-visible:ring-offset-2 focus-visible:ring-offset-brand-cream"
+            >
+              <LogIn size={16} /> {t("nav.login")}
+            </Link>
+          )}
         </div>
 
         <button
@@ -128,13 +142,23 @@ export default function LandingNavbar() {
               >
                 <Languages size={14} /> {lang === "en" ? "తె" : "EN"}
               </button>
-              <Link
-                to="/login"
-                onClick={() => setMobileOpen(false)}
-                className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-brand-yellow px-5 py-2.5 text-sm font-bold text-neutral-900 shadow-md"
-              >
-                <LogIn size={16} /> {t("nav.login")}
-              </Link>
+              {user ? (
+                <Link
+                  to="/dashboard"
+                  onClick={() => setMobileOpen(false)}
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-brand-yellow px-5 py-2.5 text-sm font-bold text-neutral-900 shadow-md"
+                >
+                  <LayoutDashboard size={16} /> {t("nav.dashboard")}
+                </Link>
+              ) : (
+                <Link
+                  to="/login"
+                  onClick={() => setMobileOpen(false)}
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-brand-yellow px-5 py-2.5 text-sm font-bold text-neutral-900 shadow-md"
+                >
+                  <LogIn size={16} /> {t("nav.login")}
+                </Link>
+              )}
             </div>
           </div>
         </nav>
