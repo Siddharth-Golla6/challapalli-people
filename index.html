@@ -60,6 +60,10 @@
     <!-- Fonts: preconnect + preload the stylesheet so FOUT is minimal. -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Warm the TLS + DNS to the API host and the R2 photo host so the
+         first signed-in page's fetches land ~200-500 ms sooner. -->
+    <link rel="preconnect" href="https://challapalli-people-api.onrender.com" crossorigin />
+    <link rel="dns-prefetch" href="https://pub-411a927da6fe4f6c96e0d614746062dc.r2.dev" />
     <link
       href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Noto+Sans+Telugu:wght@400;500;600;700&display=swap"
       rel="stylesheet"

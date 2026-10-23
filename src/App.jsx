@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, lazy, Suspense } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 
@@ -16,23 +16,29 @@ import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PageShell from "./components/PageShell";
 
+// The landing + login flow has to feel instant, so those stay eager.
+// Everything else is pulled off the critical path with React.lazy —
+// recharts (~90 KB), leaflet (~60 KB) and the admin bundle live in
+// their own JS chunks, downloaded only when a user actually opens a
+// page that uses them.
 import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
 import AdminLogin from "./pages/AdminLogin";
-import Dashboard from "./pages/Dashboard";
-import WardDashboard from "./pages/WardDashboard";
-import ReportProblem from "./pages/ReportProblem";
-import ProblemDetails from "./pages/ProblemDetails";
-import SolvedProblems from "./pages/SolvedProblems";
-import Announcements from "./pages/Announcements";
-import AboutUs from "./pages/AboutUs";
-import AdminDashboard from "./pages/AdminDashboard";
-import CommunityVoice from "./pages/CommunityVoice";
-import Copyright from "./pages/Copyright";
-import MyReports from "./pages/MyReports";
 import NotFound from "./pages/NotFound";
+
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const WardDashboard = lazy(() => import("./pages/WardDashboard"));
+const ReportProblem = lazy(() => import("./pages/ReportProblem"));
+const ProblemDetails = lazy(() => import("./pages/ProblemDetails"));
+const SolvedProblems = lazy(() => import("./pages/SolvedProblems"));
+const Announcements = lazy(() => import("./pages/Announcements"));
+const AboutUs = lazy(() => import("./pages/AboutUs"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const CommunityVoice = lazy(() => import("./pages/CommunityVoice"));
+const Copyright = lazy(() => import("./pages/Copyright"));
+const MyReports = lazy(() => import("./pages/MyReports"));
 
 // Every routed element passes through PageShell, which gives it a shared
 // fade+lift entrance/exit powered by framer-motion. withLayout stacks the
@@ -90,6 +96,7 @@ function AnimatedRoutes() {
     <>
       <ScrollToTop />
       <AnimatePresence mode="wait" initial={false}>
+        <Suspense fallback={<div className="min-h-[60vh]" aria-busy="true" />}>
         <Routes location={location} key={location.pathname}>
         <Route path="/" element={withShell(<LandingPage />)} />
         <Route path="/login" element={withShell(<Login />)} />
@@ -139,6 +146,7 @@ function AnimatedRoutes() {
         <Route path="/404" element={withShell(<NotFound />)} />
         <Route path="*" element={withShell(<NotFound />)} />
       </Routes>
+      </Suspense>
       </AnimatePresence>
     </>
   );
