@@ -54,6 +54,11 @@ export default {
   // ---- Login / Register / Admin login ----
   "login.title": "Resident Login",
   "login.subtitle": "Log in to report issues and get involved.",
+  "login.hero.title": "Your Ward. Your Voice.",
+  "login.hero.subtitle": "The civic engagement platform for all 18 wards of Challapalli Gram Panchayat. Report issues, share suggestions, follow progress — all in English or Telugu.",
+  "login.hero.feature1": "All 18 wards, one place",
+  "login.hero.feature2": "Transparent status timeline on every report",
+  "login.hero.feature3": "English + Telugu, phone-only sign-up",
   "login.tab.password": "Password",
   "login.tab.otp": "Log in with OTP",
   "login.phone": "Phone Number",
