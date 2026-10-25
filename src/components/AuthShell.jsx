@@ -1,93 +1,112 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { ShieldCheck, MapPin, Globe } from "lucide-react";
-import Logo from "./Logo";
+import { ShieldCheck, Sparkles } from "lucide-react";
 import { useLang } from "../context/LanguageContext";
 
 // Shared layout for Login / Register / Forgot Password / Admin Login.
-// Desktop: split-screen with a branded showcase panel on the left and the
-// form card on the right. Mobile: single column, form only (showcase
-// collapses to a slim banner above the form).
+// Modern floating-card look: a single centered glass panel over a dark
+// mesh gradient with slow-pulsing colored orbs and a subtle dot grid.
+// Linear / Vercel / Clerk influence — minimal, dark-first, focus pulled
+// to the form itself.
 export default function AuthShell({ title, subtitle, children, footer }) {
   const { t } = useLang();
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-brand-yellow/20 via-white to-brand-red/10 dark:from-neutral-900 dark:via-neutral-950 dark:to-neutral-900">
-      {/* Showcase panel — hidden on mobile, visible from lg+ */}
-      <aside className="relative hidden overflow-hidden lg:flex lg:w-5/12 lg:flex-col lg:justify-between bg-gradient-to-br from-brand-green via-emerald-700 to-emerald-900 px-10 py-12 text-white">
-        {/* Oversized backdrop word — the same identity device the landing
-            page uses, dropped straight into the login hero to tie the two
-            surfaces together. */}
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute -right-16 top-16 select-none font-display text-[14rem] font-black leading-none tracking-tight text-brand-yellow/15"
+    <div className="dark relative isolate flex min-h-screen items-center justify-center overflow-hidden bg-neutral-950 px-4 py-10 text-neutral-100">
+      {/* Backdrop — three slow orbs + a faint grid, all pointer-events-none
+          so they never swallow a click meant for the card. */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
+        <div className="auth-orb left-[8%] top-[15%] h-[32rem] w-[32rem] bg-emerald-500/25" />
+        <div className="auth-orb right-[-6rem] top-[55%] h-[28rem] w-[28rem] bg-brand-yellow/20" style={{ animationDelay: "4s" }} />
+        <div className="auth-orb left-1/2 bottom-[-10rem] h-[24rem] w-[24rem] -translate-x-1/2 bg-brand-red/20" style={{ animationDelay: "8s" }} />
+        <div
+          className="absolute inset-0 opacity-[0.18]"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.35) 1px, transparent 0)",
+            backgroundSize: "28px 28px",
+            maskImage: "radial-gradient(ellipse 70% 60% at 50% 40%, black 40%, transparent 100%)",
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-neutral-950/0 via-neutral-950/20 to-neutral-950/80" />
+      </div>
+
+      <style>{`
+        @keyframes auth-orb-float {
+          0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.75; }
+          50%      { transform: translate3d(0, -24px, 0) scale(1.08); opacity: 1; }
+        }
+        .auth-orb {
+          position: absolute;
+          border-radius: 9999px;
+          filter: blur(72px);
+          animation: auth-orb-float 14s ease-in-out infinite;
+          will-change: transform, opacity;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .auth-orb { animation: none; }
+        }
+      `}</style>
+
+      <div className="page-enter relative w-full max-w-[420px]">
+        {/* Floating brand chip */}
+        <Link
+          to="/"
+          className="mb-6 flex items-center justify-center gap-2.5"
+          aria-label="challapalli.people"
         >
-          CHALLAPALLI
-        </span>
+          <img
+            src="/logo.png"
+            alt=""
+            width={44}
+            height={44}
+            className="rounded-full ring-2 ring-brand-yellow/40"
+          />
+          <span className="font-display text-lg font-extrabold tracking-tight text-white">
+            challapalli<span className="text-brand-yellow">.</span>people
+          </span>
+        </Link>
 
-        {/* Soft radial decoration */}
-        <div className="pointer-events-none absolute -left-24 -top-24 h-80 w-80 rounded-full bg-brand-yellow/20 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-20 right-0 h-72 w-72 rounded-full bg-brand-red/20 blur-3xl" />
+        {/* The card — glass over the orb-lit backdrop. Border uses a soft
+            emerald tint so it feels tethered to the brand without shouting. */}
+        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.04] p-7 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.5)] backdrop-blur-xl sm:p-9">
+          {/* top-edge highlight */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent"
+          />
 
-        <div className="relative z-10">
-          <Link to="/" className="inline-flex items-center gap-3">
-            <img src="/logo.png" alt="challapalli.people" width={56} height={56} className="rounded-full ring-2 ring-brand-yellow/40" />
-            <span className="font-display text-xl font-extrabold tracking-tight">challapalli.people</span>
-          </Link>
-          <p className="mt-10 max-w-sm text-sm font-semibold uppercase tracking-widest text-brand-yellow">
-            {t("brand.taglineDot")}
-          </p>
-          <h2 className="mt-3 font-display text-4xl font-extrabold leading-tight">
-            {t("login.hero.title")}
-          </h2>
-          <p className="mt-4 max-w-md text-base leading-relaxed text-white/80">
-            {t("login.hero.subtitle")}
-          </p>
-        </div>
-
-        <ul className="relative z-10 mt-10 space-y-3 text-sm text-white/90">
-          <li className="flex items-center gap-3">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/20">
-              <MapPin size={14} strokeWidth={2.5} />
-            </span>
-            <span>{t("login.hero.feature1")}</span>
-          </li>
-          <li className="flex items-center gap-3">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/20">
-              <ShieldCheck size={14} strokeWidth={2.5} />
-            </span>
-            <span>{t("login.hero.feature2")}</span>
-          </li>
-          <li className="flex items-center gap-3">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/20">
-              <Globe size={14} strokeWidth={2.5} />
-            </span>
-            <span>{t("login.hero.feature3")}</span>
-          </li>
-        </ul>
-      </aside>
-
-      {/* Form panel — fills the whole viewport on mobile; right half on lg+ */}
-      <main className="flex min-h-screen w-full items-center justify-center px-4 py-10 sm:px-8 lg:w-7/12">
-        <div className="page-enter w-full max-w-md">
-          {/* Mobile-only logo (the showcase handles branding on lg+). */}
-          <Link to="/" className="mb-6 flex justify-center lg:hidden">
-            <Logo size={56} />
-          </Link>
-
-          <div className="rounded-2xl border border-neutral-200/70 bg-white/90 p-8 shadow-xl backdrop-blur dark:border-neutral-800 dark:bg-neutral-900/80 sm:p-10">
-            <h1 className="font-display text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
-              {title}
-            </h1>
-            {subtitle && (
-              <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">{subtitle}</p>
-            )}
-            <div className="mt-7">{children}</div>
+          {/* Context pill above the heading */}
+          <div className="mb-5 inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-widest text-emerald-300">
+            <Sparkles size={11} /> {t("brand.taglineDot")}
           </div>
 
-          {footer && <div className="mt-5 text-center text-sm">{footer}</div>}
+          <h1 className="font-display text-3xl font-extrabold tracking-tight text-white sm:text-[2.1rem]">
+            {title}
+          </h1>
+          {subtitle && (
+            <p className="mt-2 text-sm leading-relaxed text-neutral-400">
+              {subtitle}
+            </p>
+          )}
+
+          <div className="auth-form mt-7">{children}</div>
         </div>
-      </main>
+
+        {/* Secondary links / footer prose below the card */}
+        {footer && (
+          <div className="mt-5 text-center text-sm text-neutral-400">
+            {footer}
+          </div>
+        )}
+
+        {/* Lightweight trust indicator — gives the auth screen a sense of
+            legitimacy without a boilerplate "we take security seriously" line. */}
+        <p className="mt-6 flex items-center justify-center gap-1.5 text-[11px] font-medium text-neutral-500">
+          <ShieldCheck size={12} className="text-emerald-400" />
+          <span>bcrypt-hashed, JWT-signed, no third-party tracking</span>
+        </p>
+      </div>
     </div>
   );
 }
