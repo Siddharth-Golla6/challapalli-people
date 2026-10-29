@@ -74,15 +74,25 @@ function Providers({ children }) {
 }
 
 // React Router v6 doesn't restore scroll on its own, and the framer-motion
-// exit animation keeps the outgoing page visible briefly, which otherwise
-// leaves users looking at the bottom of the prior scroll. Instant scroll
-// (no "smooth") on every pathname change puts the incoming page at the top.
-// Skip when the URL has a #hash — then the browser's anchor jump wins.
+// exit animation (plus the Suspense fallback for lazy-loaded routes) keeps
+// the outgoing page visible/laid-out for a beat — the window ends up
+// scrolled wherever the previous page was. Fix: scroll immediately on
+// pathname change AND again on the next animation frame to catch any
+// Suspense-swapped content that mounts after the first pass. Skip when
+// the URL has a #hash — then the browser's anchor jump wins.
 function ScrollToTop() {
   const { pathname, hash } = useLocation();
   useEffect(() => {
     if (hash) return;
-    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    const goTop = () => window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    goTop();
+    const raf = requestAnimationFrame(goTop);
+    // Catches lazy chunks that mount a tick or two later.
+    const timer = setTimeout(goTop, 80);
+    return () => {
+      cancelAnimationFrame(raf);
+      clearTimeout(timer);
+    };
   }, [pathname, hash]);
   return null;
 }
