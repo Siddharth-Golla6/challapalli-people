@@ -35,41 +35,53 @@ export default function UsersPanel() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Activity-log writes are secondary and don't need to block the UI —
+  // fire them off without awaiting so the admin's next click is responsive
+  // instead of waiting for a second Render round-trip.
+  const logFire = (message) => {
+    log(current?.name || "Admin", message).catch(() => {});
+  };
+
   const handleRole = async (u, role) => {
     setError("");
+    // Optimistic: swap the row's role (+ ward if becoming Volunteer) locally
+    // so the Select shows the new value immediately; the refresh() after
+    // the API call reconciles with authoritative server state.
+    const wardId = role === "Volunteer" ? u.wardId || WARDS[0].id : u.wardId;
+    setUsers((prev) => prev.map((x) => (x.id === u.id ? { ...x, role, wardId } : x)));
     try {
-      // Becoming a Volunteer needs a Ward — default to whatever they
-      // already had (e.g. from registration), or the first Ward, and let
-      // the admin adjust it right away via the Ward column that appears.
-      const wardId = role === "Volunteer" ? u.wardId || WARDS[0].id : undefined;
-      await updateUserRole(u.id, role, wardId);
-      await log(current?.name || "Admin", `Changed ${u.name}'s role to ${role}`);
+      await updateUserRole(u.id, role, role === "Volunteer" ? wardId : undefined);
+      logFire(`Changed ${u.name}'s role to ${role}`);
       refresh();
     } catch (err) {
       setError(err.message);
+      refresh(); // roll back from server
     }
   };
 
   const handleWard = async (u, wardId) => {
     setError("");
+    setUsers((prev) => prev.map((x) => (x.id === u.id ? { ...x, wardId } : x)));
     try {
       await updateUserRole(u.id, u.role, wardId);
-      await log(current?.name || "Admin", `Moved volunteer ${u.name} to a different Ward`);
+      logFire(`Moved volunteer ${u.name} to a different Ward`);
       refresh();
     } catch (err) {
       setError(err.message);
+      refresh();
     }
   };
 
   const handleDelete = async (u) => {
     if (!window.confirm(t("admin.users.confirmDelete", { name: u.name }))) return;
     setError("");
+    setUsers((prev) => prev.filter((x) => x.id !== u.id));
     try {
       await deleteUser(u.id);
-      await log(current?.name || "Admin", `Removed user ${u.name}`);
-      refresh();
+      logFire(`Removed user ${u.name}`);
     } catch (err) {
       setError(err.message);
+      refresh();
     }
   };
 
@@ -79,7 +91,7 @@ export default function UsersPanel() {
     setError("");
     try {
       await resetUserPassword(u.id, password);
-      await log(current?.name || "Admin", `Reset ${u.name}'s password`);
+      logFire(`Reset ${u.name}'s password`);
       window.alert(t("admin.users.resetPasswordSuccess", { name: u.name }));
     } catch (err) {
       setError(err.message);

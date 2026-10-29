@@ -34,21 +34,50 @@ export function SuggestionsProvider({ children }) {
     return suggestion;
   };
 
+  // Optimistic updates — see ProblemsContext for the full comment. Same
+  // pattern: patch state immediately, swap in the server copy on success,
+  // revert on failure.
   const updateSuggestion = async (id, patch) => {
-    const { suggestion } = await api.patch(`/suggestions/${id}`, patch);
-    setSuggestions((prev) => prev.map((s) => (s.id === id ? suggestion : s)));
-    return suggestion;
+    const rollback = suggestions.find((s) => s.id === id);
+    if (rollback) {
+      setSuggestions((prev) => prev.map((s) => (s.id === id ? { ...s, ...patch } : s)));
+    }
+    try {
+      const { suggestion } = await api.patch(`/suggestions/${id}`, patch);
+      setSuggestions((prev) => prev.map((s) => (s.id === id ? suggestion : s)));
+      return suggestion;
+    } catch (err) {
+      if (rollback) setSuggestions((prev) => prev.map((s) => (s.id === id ? rollback : s)));
+      throw err;
+    }
   };
 
   const deleteSuggestion = async (id) => {
-    await api.del(`/suggestions/${id}`);
+    const rollback = suggestions.find((s) => s.id === id);
     setSuggestions((prev) => prev.filter((s) => s.id !== id));
+    try {
+      await api.del(`/suggestions/${id}`);
+    } catch (err) {
+      if (rollback) setSuggestions((prev) => [rollback, ...prev]);
+      throw err;
+    }
   };
 
   const upvoteSuggestion = async (id) => {
-    const { suggestion } = await api.post(`/suggestions/${id}/upvote`, {});
-    setSuggestions((prev) => prev.map((s) => (s.id === id ? suggestion : s)));
-    return suggestion;
+    const rollback = suggestions.find((s) => s.id === id);
+    if (rollback) {
+      setSuggestions((prev) =>
+        prev.map((s) => (s.id === id ? { ...s, supportCount: (s.supportCount || 0) + 1 } : s))
+      );
+    }
+    try {
+      const { suggestion } = await api.post(`/suggestions/${id}/upvote`, {});
+      setSuggestions((prev) => prev.map((s) => (s.id === id ? suggestion : s)));
+      return suggestion;
+    } catch (err) {
+      if (rollback) setSuggestions((prev) => prev.map((s) => (s.id === id ? rollback : s)));
+      throw err;
+    }
   };
 
   return (

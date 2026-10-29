@@ -46,14 +46,33 @@ export function ProblemsProvider({ children }) {
     return normalized;
   };
 
+  // Optimistic update: the UI reflects the new value immediately so the
+  // dropdown/badge doesn't appear stuck while Render's free tier spins up a
+  // 300-1500 ms round-trip. On an API failure we revert to the pre-patch
+  // row and re-throw so the caller can surface the error.
   const updateProblem = async (id, patch) => {
-    const { problem } = await api.patch(`/problems/${id}`, patch);
-    return replaceOne(problem);
+    const rollback = problems.find((p) => p.id === id);
+    if (rollback) {
+      setProblems((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)));
+    }
+    try {
+      const { problem } = await api.patch(`/problems/${id}`, patch);
+      return replaceOne(problem);
+    } catch (err) {
+      if (rollback) setProblems((prev) => prev.map((p) => (p.id === id ? rollback : p)));
+      throw err;
+    }
   };
 
   const deleteProblem = async (id) => {
-    await api.del(`/problems/${id}`);
+    const rollback = problems.find((p) => p.id === id);
     setProblems((prev) => prev.filter((p) => p.id !== id));
+    try {
+      await api.del(`/problems/${id}`);
+    } catch (err) {
+      if (rollback) setProblems((prev) => [rollback, ...prev]);
+      throw err;
+    }
   };
 
   const addComment = async (id, text) => {
@@ -61,9 +80,22 @@ export function ProblemsProvider({ children }) {
     return replaceOne(problem);
   };
 
+  // Upvote is bumped locally straight away — a +1 counter should never feel
+  // laggy. The server reply replaces our row so the authoritative count wins.
   const upvote = async (id) => {
-    const { problem } = await api.post(`/problems/${id}/upvote`, {});
-    return replaceOne(problem);
+    const rollback = problems.find((p) => p.id === id);
+    if (rollback) {
+      setProblems((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, supportCount: (p.supportCount || 0) + 1 } : p))
+      );
+    }
+    try {
+      const { problem } = await api.post(`/problems/${id}/upvote`, {});
+      return replaceOne(problem);
+    } catch (err) {
+      if (rollback) setProblems((prev) => prev.map((p) => (p.id === id ? rollback : p)));
+      throw err;
+    }
   };
 
   // One-off geo query — not stored in state because the user's "Near me"

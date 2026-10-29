@@ -19,13 +19,18 @@ export default function AnnouncementsPanel() {
   const [form, setForm] = useState(empty);
   const [error, setError] = useState("");
 
+  // Activity-log is fire-and-forget — see ComplaintsPanel for the rationale.
+  const logFire = (message) => {
+    log(user?.name || "Admin", message).catch(() => {});
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.title.trim() || !form.body.trim()) return;
     setError("");
     try {
       await addAnnouncement(form);
-      await log(user?.name || "Admin", `Posted announcement "${form.title}"`);
+      logFire(`Posted announcement "${form.title}"`);
       setForm(empty);
     } catch (err) {
       setError(err.message);
@@ -36,7 +41,7 @@ export default function AnnouncementsPanel() {
     setError("");
     try {
       await deleteAnnouncement(a.id);
-      await log(user?.name || "Admin", `Removed announcement "${a.title}"`);
+      logFire(`Removed announcement "${a.title}"`);
     } catch (err) {
       setError(err.message);
     }

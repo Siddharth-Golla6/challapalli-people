@@ -22,11 +22,18 @@ export default function ComplaintsPanel() {
   const filtered = useMemo(() => applyFilters(problems, filters), [problems, filters]);
   const [error, setError] = useState("");
 
+  // Activity-log writes are fire-and-forget: they're a secondary accounting
+  // concern, and awaiting them doubled the round-trip the admin saw after
+  // every status/priority change on Render's free tier.
+  const logFire = (message) => {
+    log(user?.name || "Admin", message).catch(() => {});
+  };
+
   const handleStatus = async (p, status) => {
     setError("");
     try {
       await updateProblem(p.id, { status });
-      await log(user?.name || "Admin", `Changed status of "${p.title}" to ${status}`);
+      logFire(`Changed status of "${p.title}" to ${status}`);
     } catch (err) {
       setError(err.message);
     }
@@ -36,7 +43,7 @@ export default function ComplaintsPanel() {
     setError("");
     try {
       await updateProblem(p.id, { priority });
-      await log(user?.name || "Admin", `Set priority of "${p.title}" to ${priority}`);
+      logFire(`Set priority of "${p.title}" to ${priority}`);
     } catch (err) {
       setError(err.message);
     }
@@ -47,7 +54,7 @@ export default function ComplaintsPanel() {
     setError("");
     try {
       await deleteProblem(p.id);
-      await log(user?.name || "Admin", `Deleted complaint "${p.title}"`);
+      logFire(`Deleted complaint "${p.title}"`);
     } catch (err) {
       setError(err.message);
     }
