@@ -25,6 +25,20 @@ const authLimiter = rateLimit({
   message: { error: "Too many attempts from this device. Please try again later." },
 });
 
+// Admin / staff writes also deserve their own rate limit — a stolen JWT with
+// Administrator scope would otherwise be able to bulk-delete the panchayat's
+// data at line speed. 120/min is generous for real admin usage (a human can't
+// realistically moderate faster) and still caps the blast radius of abuse.
+const adminWriteLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 120,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many admin requests. Please slow down." },
+  // Only count mutations; reads stay unmetered so dashboards still refresh fast.
+  skip: (req) => req.method === "GET" || req.method === "OPTIONS" || req.method === "HEAD",
+});
+
 export function createApp() {
   const app = express();
 
@@ -42,7 +56,13 @@ export function createApp() {
   const corsOrigin = allowedOrigins.length ? allowedOrigins : isProduction ? false : true;
   app.use(cors({ origin: corsOrigin }));
 
-  app.use(morgan("dev"));
+  // morgan("dev") is colour-coded for a human in a terminal; "combined" is
+  // Apache's standard access-log format for aggregators. Pick based on env
+  // so Render's log viewer gets a line Logtail/Datadog can parse without
+  // ANSI stripping. Health checks are silenced so they don't drown the log.
+  app.use(morgan(isProduction ? "combined" : "dev", {
+    skip: (req) => req.path === "/api/health",
+  }));
   // Photos are stored as base64 data URIs directly in request bodies, so the
   // default 100kb JSON limit needs raising.
   app.use(express.json({ limit: "15mb" }));
@@ -51,13 +71,15 @@ export function createApp() {
   app.get("/api/health", (req, res) => res.json({ ok: true }));
 
   app.use("/api/auth", authLimiter, authRoutes);
-  app.use("/api/problems", problemsRoutes);
-  app.use("/api/announcements", announcementsRoutes);
-  app.use("/api/users", usersRoutes);
-  app.use("/api/activity-log", activityLogRoutes);
-  app.use("/api/volunteers", volunteersRoutes);
-  app.use("/api/suggestions", suggestionsRoutes);
-  app.use("/api/feedback", feedbackRoutes);
+  // Every write endpoint below goes through the admin/staff limiter; GETs
+  // (resident browsing) skip it via the `skip` callback above.
+  app.use("/api/problems", adminWriteLimiter, problemsRoutes);
+  app.use("/api/announcements", adminWriteLimiter, announcementsRoutes);
+  app.use("/api/users", adminWriteLimiter, usersRoutes);
+  app.use("/api/activity-log", adminWriteLimiter, activityLogRoutes);
+  app.use("/api/volunteers", adminWriteLimiter, volunteersRoutes);
+  app.use("/api/suggestions", adminWriteLimiter, suggestionsRoutes);
+  app.use("/api/feedback", adminWriteLimiter, feedbackRoutes);
 
   app.use((req, res) => res.status(404).json({ error: "Not found." }));
 
